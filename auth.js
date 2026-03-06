@@ -1,12 +1,11 @@
 // auth.js — protección de páginas
 (function () {
-  const token = sessionStorage.getItem('bdns_token');
+  const token  = sessionStorage.getItem('bdns_token');
   if (!token) {
     window.location.href = '/login.html';
     return;
   }
 
-  // Mostrar usuario en header
   const usuario = sessionStorage.getItem('bdns_usuario');
   const rol     = sessionStorage.getItem('bdns_rol') || 'usuario';
 
@@ -20,7 +19,7 @@
     const el = document.getElementById('usuarioActual');
     if (el && usuario) el.textContent = usuario;
 
-    // Ocultar Admin BD si no es admin ni gestor
+    // Ocultar enlace Admin si no tiene permisos
     if (rol !== 'admin' && rol !== 'gestor') {
       const adminLink = document.getElementById('adminLink');
       if (adminLink) adminLink.style.display = 'none';
@@ -39,6 +38,10 @@
 })();
 
 function logout() {
+  const token = sessionStorage.getItem('bdns_token');
+  if (token) {
+    fetch('/api/logout', { method: 'POST' }).catch(() => {});
+  }
   sessionStorage.clear();
   window.location.href = '/login.html';
 }
