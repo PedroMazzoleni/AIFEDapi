@@ -158,7 +158,7 @@ function addRows(rows) {
 
 // ── Detalle convocatoria ─────────────────────────────────
 async function fetchDetalles(rows) {
-  const LOTE = 5;
+  const LOTE = 3;
   for (let i = 0; i < rows.length; i += LOTE) {
     const lote = rows.slice(i, i + LOTE);
     await Promise.all(lote.map(async r => {
@@ -241,7 +241,7 @@ async function fetchDetalles(rows) {
       }
     }));
     filtrarPorEstado();
-    await new Promise(resolve => setTimeout(resolve, 150));
+    await new Promise(resolve => setTimeout(resolve, 350));
   }
 }
 
@@ -439,8 +439,9 @@ async function cargarPoctep() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const convs = await res.json();
     if (!convs.length) return;
+    datos.push(...convs);
     addRowsPoctep(convs);
-    $('tbarR').textContent = fmt(datos.length + convs.length) + ' registros';
+    $('tbarR').textContent = fmt(convs.length) + ' registros';
   } catch(e) {
     console.warn('[POCTEP] Error cargando:', e.message);
   }
@@ -493,6 +494,7 @@ async function cargarSocialPower() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const convs = await res.json();
     if (!convs.length) return;
+    datos.push(...convs);
     addRowsSocialPower(convs);
     $('tbarR').textContent = fmt(convs.length) + ' registros';
   } catch(e) {

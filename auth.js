@@ -19,10 +19,10 @@
     const el = document.getElementById('usuarioActual');
     if (el && usuario) el.textContent = usuario;
 
-    // Ocultar enlace Admin si no tiene permisos
-    if (rol !== 'admin' && rol !== 'gestor') {
-      const adminLink = document.getElementById('adminLink');
-      if (adminLink) adminLink.style.display = 'none';
+    // Mostrar enlace Admin solo si es admin o gestor
+    const adminLink = document.getElementById('adminLink');
+    if (adminLink) {
+      adminLink.style.display = (rol === 'admin' || rol === 'gestor') ? '' : 'none';
     }
   });
 

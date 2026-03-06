@@ -156,6 +156,10 @@
 
 <script src="auth.js"></script>
 <script>
+  function esc(s) {
+    if (s == null || s === undefined) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
   // ── Usuarios ──────────────────────────────────────────
   async function cargarUsuarios() {
     const res = await fetch('/api/usuarios');
@@ -165,6 +169,8 @@
     let html = `<table class="admin-table"><thead><tr><th>ID</th><th>Usuario</th><th>Nombre</th><th>Último login</th><th>Rol</th><th>Acciones</th></tr></thead><tbody>`;
     users.forEach(u => {
       const rol = u.rol || 'usuario';
+      const usuarioEsc = esc(u.usuario);
+      const nombreEsc = esc(u.nombre || '');
       const rolBadge = rol === 'admin'
         ? `<span class="bo-sm" style="background:#1a3f7a;border-color:#1a3f7a;">🔑 Admin</span>`
         : rol === 'gestor'
@@ -179,16 +185,16 @@
           <option value="gestor"  ${rol==='gestor' ?'selected':''}>📋 Gestor</option>
           <option value="admin"   ${rol==='admin'  ?'selected':''}>🔑 Admin</option>
         </select>
-        <button class="admin-btn" style="font-size:10px;padding:4px 10px;background:#1a3f7a;" onclick="cambiarRol(${u.id},'${u.usuario}')">Guardar</button>`;
+        <button class="admin-btn" style="font-size:10px;padding:4px 10px;background:#1a3f7a;" onclick="cambiarRol(${u.id},'${usuarioEsc}')">Guardar</button>`;
       html+=`<tr>
         <td><span class="admin-id">${u.id}</span></td>
-        <td><span style="font-family:var(--mono);font-size:11px;">${u.usuario}</span></td>
-        <td style="font-size:12px;">${u.nombre||'—'}</td>
+        <td><span style="font-family:var(--mono);font-size:11px;">${usuarioEsc}</span></td>
+        <td style="font-size:12px;">${nombreEsc || '—'}</td>
         <td class="admin-fecha">${u.ultimo_login?new Date(u.ultimo_login).toLocaleString('es-ES'):'Nunca'}</td>
         <td>${rolBadge}</td>
         <td style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
           ${btnRol}
-          ${miRol === 'admin' ? `<button class="admin-btn" style="background:var(--red);font-size:10px;padding:4px 10px;" onclick="eliminarUsuario(${u.id},'${u.usuario}')">Eliminar</button>` : ''}
+          ${miRol === 'admin' ? `<button class="admin-btn" style="background:var(--red);font-size:10px;padding:4px 10px;" onclick="eliminarUsuario(${u.id},'${usuarioEsc}')">Eliminar</button>` : ''}
         </td>
       </tr>`;
     });

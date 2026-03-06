@@ -91,6 +91,9 @@ body {
   padding: 3px 10px; border-radius: 2px;
 }
 
+.meta-user { font-family: var(--mono); font-size: 10px; color: rgba(255,255,255,0.5); }
+.admin-link-header { font-family: var(--mono); font-size: 10px; color: var(--gold-mid); text-decoration: none; padding: 3px 8px; border: 1px solid rgba(201,168,26,0.4); border-radius: 3px; transition: all 0.12s; }
+.admin-link-header:hover { background: rgba(201,168,26,0.15); color: white; border-color: var(--gold-mid); }
 .meta-url { font-family: var(--mono); font-size: 11px; color: rgba(255,255,255,0.3); }
 
 /* ── Contenedor principal ──────────────────────────────── */

@@ -85,7 +85,7 @@
           sessionStorage.setItem('bdns_usuario', data.usuario);
           sessionStorage.setItem('bdns_rol',     data.rol || 'usuario');
           const rol = data.rol || 'usuario';
-          window.location.href = rol === 'admin' || rol === 'gestor' ? '/admin.html' : '/login.html';
+            window.location.href = '/index.html';
         } else {
           pEl.value = '';
           err.textContent = data.error || 'Usuario o contraseña incorrectos. (HTTP ' + xhr.status + ')';
