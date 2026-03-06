@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BDNS · Buscador de Convocatorias</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- CABECERA -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <div class="brand-seal">BOE</div>
+        <div class="brand-text">
+          <span class="brand-ministry">Ministerio de Hacienda · IGAE · España</span>
+          <h1 class="brand-title">Base de Datos Nacional de Subvenciones</h1>
+        </div>
+      </div>
+      <div class="header-meta">
+        <div class="meta-pill">API pública</div>
+        <span class="meta-url">infosubvenciones.es</span>
+        <span style="font-family:var(--mono);font-size:11px;color:rgba(255,255,255,0.6);">👤 <span id="usuarioActual"></span></span>
+        <a href="/admin.html" id="adminLink" style="font-family:var(--mono);font-size:10px;padding:4px 10px;background:transparent;border:1px solid rgba(255,255,255,0.2);border-radius:4px;color:rgba(255,255,255,0.5);cursor:pointer;text-decoration:none;letter-spacing:0.05em;" onmouseover="this.style.borderColor='rgba(255,255,255,0.5)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.2)'">🗄 Admin</a>
+        <button onclick="logout()" style="font-family:var(--mono);font-size:10px;padding:4px 10px;background:transparent;border:1px solid rgba(255,255,255,0.25);border-radius:4px;color:rgba(255,255,255,0.6);cursor:pointer;letter-spacing:0.05em;" onmouseover="this.style.borderColor='rgba(255,255,255,0.6)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.25)'">Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENIDO -->
+  <div class="wrap">
+
+    <!-- BLOQUE 1: CCAA -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-num">01</span>
+        <span class="card-title">Comunidad Autónoma</span>
+      </div>
+      <div class="ccaa-grid" id="ccaaGrid"></div>
+    </div>
+
+    <!-- BLOQUE 2: FILTROS EN FILA -->
+    <div class="filters-row">
+
+      <div class="card filter-card">
+        <div class="card-header">
+          <span class="card-num">02</span>
+          <span class="card-title">Estado de la Convocatoria</span>
+          <span class="card-hint">Se carga al extraer detalles</span>
+        </div>
+        <div class="chip-list" id="estadoChips">
+          <div class="f-chip active" data-val="" onclick="setEstado(this,'')">Todas</div>
+          <div class="f-chip chip-open" data-val="true" onclick="setEstado(this,'true')">Abiertas</div>
+          <div class="f-chip chip-closed" data-val="false" onclick="setEstado(this,'false')">Cerradas</div>
+        </div>
+      </div>
+
+      <div class="card filter-card">
+        <div class="card-header">
+          <span class="card-num">04</span>
+          <span class="card-title">Fecha de Recepción</span>
+        </div>
+        <div class="chip-list" id="fechaChips">
+          <div class="f-chip fecha-chip" data-val="2026-01-01" onclick="setFecha(this,'2026-01-01')">Solo 2026</div>
+          <div class="f-chip fecha-chip" data-val="2025-01-01" onclick="setFecha(this,'2025-01-01')">Desde 2025</div>
+          <div class="f-chip fecha-chip" data-val="2023-01-01" onclick="setFecha(this,'2023-01-01')">Desde 2023</div>
+          <div class="f-chip fecha-chip active" data-val="" onclick="setFecha(this,'')">Todas</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ACCIÓN -->
+    <div class="action-row">
+      <button class="btn-primary" id="btnRun" onclick="iniciar()">▶&ensp;Buscar convocatorias</button>
+    </div>
+
+    <!-- BUSCADOR -->
+    <div class="card" id="searchCard" style="display:none;">
+      <div class="card-header">
+        <span class="card-num">🔍</span>
+        <span class="card-title">Buscar en resultados</span>
+      </div>
+      <div style="padding:0 0 4px 0;">
+        <input type="text" id="searchInput"
+          placeholder="Filtra por título, órgano, número de convocatoria…"
+          oninput="filtrarTexto()"
+          style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--sans);font-size:14px;color:var(--ink);background:var(--paper);outline:none;box-sizing:border-box;">
+        <div id="searchInfo" style="margin-top:6px;font-family:var(--mono);font-size:10px;color:var(--ink-faint);min-height:16px;"></div>
+      </div>
+    </div>
+
+    <!-- ERROR -->
+    <div class="err-banner" id="err"></div>
+
+    <!-- PROGRESO -->
+    <div class="progress-card" id="progPanel">
+      <div class="prog-header">
+        <span class="prog-label" id="progLabel">Iniciando…</span>
+        <span class="prog-pct" id="progNum">0%</span>
+      </div>
+      <div class="prog-track"><div class="prog-fill" id="fill"></div></div>
+      <div class="prog-stats">
+        <div class="stat-item">
+          <span class="stat-label">Total disponible</span>
+          <span class="stat-value" id="kTotal">—</span>
+        </div>
+        <div class="stat-sep"></div>
+        <div class="stat-item">
+          <span class="stat-label">Extraídas</span>
+          <span class="stat-value sv-blue" id="kExtr">0</span>
+        </div>
+        <div class="stat-sep"></div>
+        <div class="stat-item">
+          <span class="stat-label">Páginas</span>
+          <span class="stat-value sv-purple" id="kPags">0</span>
+        </div>
+        <div class="stat-sep"></div>
+        <div class="stat-item">
+          <span class="stat-label">Errores</span>
+          <span class="stat-value sv-warn" id="kErrs">0</span>
+        </div>
+      </div>
+      <div class="prog-log" id="logLine">—</div>
+    </div>
+
+    <!-- BARRA RESULTADOS -->
+    <div class="results-bar" id="resultsBar">
+      <div class="rb-left">
+        <span class="rb-count" id="tbarR">0 registros</span>
+        <span class="rb-note" id="estadoFiltroNote"></span>
+      </div>
+      <div class="rb-right">
+        <button class="btn-export csv" onclick="dlCSV()">↓ CSV</button>
+        <button class="btn-export json" onclick="dlJSON()">↓ JSON</button>
+        <button class="btn-stop" id="btnStop" onclick="parar()">■ Detener</button>
+      </div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="table-wrapper" id="tablePanel">
+      <div class="tscroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th class="col-num">Nº Conv.</th>
+              <th class="col-ccaa">CCAA / Órgano</th>
+              <th class="col-regiones">Regiones</th>
+              <th class="col-titulo">Título</th>
+              <th class="col-fecha">Recepción</th>
+              <th class="col-plazo">Plazo</th>
+              <th class="col-detalle">Estado · Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /wrap -->
+
+  <footer class="site-footer">
+    <span>BDNS · Base de Datos Nacional de Subvenciones</span>
+    <span>·</span>
+    <span>Ministerio de Hacienda de España</span>
+    <span>·</span>
+    <a href="https://www.pap.hacienda.gob.es/bdnstrans/GE/es/avisolegal" target="_blank">Aviso legal</a>
+  </footer>
+
+<script src="auth.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

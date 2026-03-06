@@ -1,0 +1,254 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BDNS · Panel de Administración</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@300;400;600&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .admin-header { background:var(--ink); border-bottom:3px solid var(--gold); padding:16px 32px; display:flex; align-items:center; justify-content:space-between; }
+    .admin-title { font-family:var(--serif); font-size:20px; color:white; }
+    .admin-back { color:rgba(255,255,255,0.5); font-family:var(--mono); font-size:11px; text-decoration:none; border:1px solid rgba(255,255,255,0.2); padding:6px 14px; border-radius:4px; transition:all 0.12s; }
+    .admin-back:hover { color:var(--gold-mid); border-color:var(--gold-mid); }
+
+    .admin-wrap { max-width:1320px; margin:0 auto; padding:28px 32px; display:flex; flex-direction:column; gap:20px; }
+
+    /* Stats cards */
+    .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+    .stat-card { background:var(--white); border:1px solid var(--border); border-radius:var(--r); padding:18px 20px; }
+    .stat-card-label { font-family:var(--mono); font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:6px; }
+    .stat-card-value { font-family:var(--mono); font-size:28px; font-weight:500; color:var(--ink); }
+    .stat-card-value.blue { color:var(--blue); }
+    .stat-card-value.green { color:var(--green); }
+    .stat-card-value.gold { color:var(--gold-mid); }
+
+    /* Filtros admin */
+    .admin-filters { background:var(--white); border:1px solid var(--border); border-radius:var(--r); padding:18px 20px; display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; }
+    .admin-filter-group { display:flex; flex-direction:column; gap:5px; }
+    .admin-filter-group label { font-family:var(--mono); font-size:9px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-faint); }
+    .admin-input { padding:7px 12px; border:1px solid var(--border); border-radius:4px; font-family:var(--sans); font-size:12px; color:var(--ink); background:var(--paper); outline:none; transition:border-color 0.12s; }
+    .admin-input:focus { border-color:var(--blue-mid); }
+    .admin-input-wide { width:280px; }
+    .admin-btn { padding:8px 20px; background:var(--ink); color:white; border:none; border-radius:4px; font-family:var(--sans); font-size:12px; cursor:pointer; transition:all 0.12s; }
+    .admin-btn:hover { background:var(--blue); }
+
+    /* Tabla admin */
+    .admin-table-wrap { background:var(--white); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; }
+    .admin-table { width:100%; border-collapse:collapse; font-size:12px; }
+    .admin-table thead { position:sticky; top:0; z-index:5; }
+    .admin-table th { background:var(--ink); color:rgba(255,255,255,0.65); font-family:var(--mono); font-size:8.5px; letter-spacing:0.12em; text-transform:uppercase; padding:10px 12px; text-align:left; border-bottom:2px solid var(--gold); white-space:nowrap; }
+    .admin-table td { padding:9px 12px; border-bottom:1px solid var(--border-light); color:var(--ink-mid); vertical-align:top; }
+    .admin-table tbody tr:hover { background:var(--paper); }
+    .admin-table tbody tr:last-child td { border-bottom:none; }
+
+    .admin-id { font-family:var(--mono); font-size:11px; color:var(--blue); font-weight:500; }
+    .admin-titulo { max-width:320px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; color:var(--ink); }
+    .admin-vpd { font-family:var(--mono); font-size:10px; background:var(--paper-warm); border:1px solid var(--border); border-radius:2px; padding:2px 6px; color:var(--ink-mid); }
+    .admin-importe { font-family:var(--mono); font-size:11px; color:var(--ink); white-space:nowrap; }
+    .admin-fecha { font-family:var(--mono); font-size:10px; color:var(--ink-light); white-space:nowrap; }
+
+    .admin-links { display:flex; flex-wrap:wrap; gap:4px; }
+    .admin-link { font-family:var(--mono); font-size:9px; padding:2px 7px; border:1px solid var(--border); border-radius:2px; text-decoration:none; color:var(--ink-mid); white-space:nowrap; }
+    .admin-link:hover { border-color:var(--blue-mid); color:var(--blue); }
+
+    /* Paginación */
+    .admin-pag { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-top:1px solid var(--border-light); background:var(--paper); }
+    .admin-pag-info { font-family:var(--mono); font-size:11px; color:var(--ink-faint); }
+    .admin-pag-btns { display:flex; gap:4px; }
+    .admin-pag-btn { padding:5px 10px; border:1px solid var(--border); border-radius:4px; background:var(--white); color:var(--ink-mid); font-family:var(--mono); font-size:11px; cursor:pointer; transition:all 0.1s; }
+    .admin-pag-btn:hover:not(:disabled) { border-color:var(--blue-mid); color:var(--blue); background:var(--blue-light); }
+    .admin-pag-btn:disabled { opacity:0.35; cursor:not-allowed; }
+    .admin-pag-btn.active { background:var(--ink); color:white; border-color:var(--ink); }
+
+    /* Loading */
+    .admin-loading { padding:40px; text-align:center; font-family:var(--mono); font-size:12px; color:var(--ink-faint); }
+
+    .bo-sm { display:inline-flex; font-family:var(--mono); font-size:8px; letter-spacing:0.06em; text-transform:uppercase; padding:2px 6px; border-radius:2px; background:var(--green-light); color:var(--green); border:1px solid var(--green); font-weight:500; }
+    .bc-sm { display:inline-flex; font-family:var(--mono); font-size:8px; letter-spacing:0.06em; text-transform:uppercase; padding:2px 6px; border-radius:2px; background:var(--paper-warm); color:var(--ink-faint); border:1px solid var(--border); }
+    .bx-sm { display:inline-flex; font-family:var(--mono); font-size:8px; letter-spacing:0.06em; text-transform:uppercase; padding:2px 6px; border-radius:2px; background:var(--warn-light); color:var(--warn); border:1px solid var(--warn); }
+  </style>
+</head>
+<body>
+
+<div class="admin-header">
+  <div style="display:flex;align-items:center;gap:14px;">
+    <div class="brand-seal" style="background:var(--gold);color:var(--ink);width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;border-radius:3px;">BD</div>
+    <span class="admin-title">Panel de Administración · Base de datos local</span>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <span style="font-family:var(--mono);font-size:10px;color:rgba(255,255,255,0.35);">👤 <span id="usuarioActual"></span></span>
+<a href="/index.html" class="admin-back">← Volver al buscador</a>
+    <button onclick="logout()" style="background:transparent;border:1px solid rgba(192,57,43,0.4);color:rgba(192,57,43,0.7);font-family:var(--mono);font-size:11px;padding:6px 14px;border-radius:4px;cursor:pointer;">Salir</button>
+  </div>
+</div>
+
+<div class="admin-wrap">
+
+
+
+  <!-- Gestión de usuarios -->
+  <div class="admin-table-wrap" style="padding:20px 24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <h3 style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink);">👤 Gestión de Usuarios</h3>
+      <button class="admin-btn" onclick="toggleNuevoUsuario()">+ Nuevo usuario</button>
+    </div>
+
+    <!-- Formulario nuevo usuario (oculto por defecto) -->
+    <div id="formNuevoUsuario" style="display:none;background:var(--paper);border:1px solid var(--border);border-radius:6px;padding:16px;margin-bottom:16px;">
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+        <div class="admin-filter-group">
+          <label>Usuario</label>
+          <input type="text" class="admin-input" id="nuevoUsuario" placeholder="nombre_usuario">
+        </div>
+        <div class="admin-filter-group">
+          <label>Contraseña</label>
+          <input type="password" class="admin-input" id="nuevoPassword" placeholder="Mínimo 6 caracteres">
+        </div>
+        <div class="admin-filter-group">
+          <label>Nombre completo</label>
+          <input type="text" class="admin-input" id="nuevoNombre" placeholder="Nombre (opcional)">
+        </div>
+        <div class="admin-filter-group">
+          <label>Rol</label>
+          <select class="admin-input" id="nuevoRol" style="padding:11px 14px;">
+            <option value="usuario">👤 Usuario</option>
+            <option value="gestor">📋 Gestor</option>
+            <option value="admin">🔑 Administrador</option>
+          </select>
+        </div>
+        <button class="admin-btn" onclick="crearUsuario()">Crear usuario</button>
+        <button class="admin-btn" onclick="toggleNuevoUsuario()" style="background:var(--paper);color:var(--ink);border:1px solid var(--border);">Cancelar</button>
+      </div>
+      <div id="msgNuevoUsuario" style="margin-top:10px;font-family:var(--mono);font-size:11px;"></div>
+    </div>
+
+    <!-- Cambiar contraseña propia -->
+    <div style="background:var(--paper);border:1px solid var(--border);border-radius:6px;padding:16px;margin-bottom:16px;">
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:10px;">🔑 Cambiar mi contraseña</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+        <div class="admin-filter-group">
+          <label>Contraseña actual</label>
+          <input type="password" class="admin-input" id="pwActual" placeholder="••••••••">
+        </div>
+        <div class="admin-filter-group">
+          <label>Nueva contraseña</label>
+          <input type="password" class="admin-input" id="pwNueva" placeholder="••••••••">
+        </div>
+        <div class="admin-filter-group">
+          <label>Repetir nueva</label>
+          <input type="password" class="admin-input" id="pwRepetir" placeholder="••••••••">
+        </div>
+        <button class="admin-btn" onclick="cambiarPassword()">Cambiar contraseña</button>
+      </div>
+      <div id="msgCambiarPw" style="margin-top:10px;font-family:var(--mono);font-size:11px;"></div>
+    </div>
+
+    <!-- Lista de usuarios -->
+    <div id="listaUsuarios"></div>
+  </div>
+
+
+
+</div>
+
+<script src="auth.js"></script>
+<script>
+  // ── Usuarios ──────────────────────────────────────────
+  async function cargarUsuarios() {
+    const res = await fetch('/api/usuarios');
+    const users = await res.json();
+    const el = document.getElementById('listaUsuarios');
+    if (!users.length) { el.innerHTML=''; return; }
+    let html = `<table class="admin-table"><thead><tr><th>ID</th><th>Usuario</th><th>Nombre</th><th>Último login</th><th>Rol</th><th>Acciones</th></tr></thead><tbody>`;
+    users.forEach(u => {
+      const rol = u.rol || 'usuario';
+      const rolBadge = rol === 'admin'
+        ? `<span class="bo-sm" style="background:#1a3f7a;border-color:#1a3f7a;">🔑 Admin</span>`
+        : rol === 'gestor'
+          ? `<span class="bo-sm" style="background:#6d4c9e;border-color:#6d4c9e;">📋 Gestor</span>`
+          : `<span style="background:#eee;color:#555;border:1px solid #ccc;border-radius:4px;padding:2px 8px;font-size:10px;font-family:var(--mono);">👤 Usuario</span>`;
+
+      // Botones cambiar rol — solo visibles si el usuario actual es admin
+      const miRol = sessionStorage.getItem('bdns_rol') || 'usuario';
+      const btnRol = miRol !== 'admin' ? '' : `
+        <select id="rolSel_${u.id}" style="font-family:var(--mono);font-size:10px;padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:white;">
+          <option value="usuario" ${rol==='usuario'?'selected':''}>👤 Usuario</option>
+          <option value="gestor"  ${rol==='gestor' ?'selected':''}>📋 Gestor</option>
+          <option value="admin"   ${rol==='admin'  ?'selected':''}>🔑 Admin</option>
+        </select>
+        <button class="admin-btn" style="font-size:10px;padding:4px 10px;background:#1a3f7a;" onclick="cambiarRol(${u.id},'${u.usuario}')">Guardar</button>`;
+      html+=`<tr>
+        <td><span class="admin-id">${u.id}</span></td>
+        <td><span style="font-family:var(--mono);font-size:11px;">${u.usuario}</span></td>
+        <td style="font-size:12px;">${u.nombre||'—'}</td>
+        <td class="admin-fecha">${u.ultimo_login?new Date(u.ultimo_login).toLocaleString('es-ES'):'Nunca'}</td>
+        <td>${rolBadge}</td>
+        <td style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+          ${btnRol}
+          ${miRol === 'admin' ? `<button class="admin-btn" style="background:var(--red);font-size:10px;padding:4px 10px;" onclick="eliminarUsuario(${u.id},'${u.usuario}')">Eliminar</button>` : ''}
+        </td>
+      </tr>`;
+    });
+    html+='</tbody></table>';
+    el.innerHTML=html;
+  }
+
+  function toggleNuevoUsuario() {
+    const f=document.getElementById('formNuevoUsuario');
+    f.style.display=f.style.display==='none'?'block':'none';
+  }
+
+  async function crearUsuario() {
+    const usuario=document.getElementById('nuevoUsuario').value.trim();
+    const password=document.getElementById('nuevoPassword').value;
+    const nombre=document.getElementById('nuevoNombre').value.trim();
+    const msg=document.getElementById('msgNuevoUsuario');
+    if (!usuario||!password) { msg.style.color='var(--red)'; msg.textContent='Usuario y contraseña son obligatorios.'; return; }
+    if (password.length<6) { msg.style.color='var(--red)'; msg.textContent='La contraseña debe tener al menos 6 caracteres.'; return; }
+    const rol=document.getElementById('nuevoRol').value;
+    const res=await fetch('/api/usuarios',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({usuario,password,nombre,rol})});
+    const data=await res.json();
+    if(data.ok){msg.style.color='var(--green)';msg.textContent='✓ Usuario creado correctamente.';document.getElementById('nuevoUsuario').value='';document.getElementById('nuevoPassword').value='';document.getElementById('nuevoNombre').value='';cargarUsuarios();}
+    else{msg.style.color='var(--red)';msg.textContent=data.error||'Error al crear usuario.';}
+  }
+
+  async function cambiarRol(id, usuario) {
+    const sel = document.getElementById('rolSel_' + id);
+    const nuevoRol = sel.value;
+    const nombres = {admin:'Administrador', gestor:'Gestor', usuario:'Usuario'};
+    if (!confirm(`¿Cambiar el rol de "${usuario}" a ${nombres[nuevoRol]}?`)) return;
+    const res=await fetch(`/api/usuarios/${id}/rol`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rol:nuevoRol})});
+    const data=await res.json();
+    if(data.ok) cargarUsuarios();
+    else alert(data.error||'Error al cambiar rol.');
+  }
+
+  async function eliminarUsuario(id, usuario) {
+    if (!confirm(`¿Eliminar el usuario "${usuario}"? Esta acción no se puede deshacer.`)) return;
+    const res=await fetch(`/api/usuarios/${id}`,{method:'DELETE'});
+    const data=await res.json();
+    if(data.ok)cargarUsuarios();
+    else alert(data.error||'Error al eliminar usuario.');
+  }
+
+  async function cambiarPassword() {
+    const actual=document.getElementById('pwActual').value;
+    const nueva=document.getElementById('pwNueva').value;
+    const repetir=document.getElementById('pwRepetir').value;
+    const msg=document.getElementById('msgCambiarPw');
+    if (!actual||!nueva) { msg.style.color='var(--red)'; msg.textContent='Rellena todos los campos.'; return; }
+    if (nueva!==repetir) { msg.style.color='var(--red)'; msg.textContent='Las contraseñas nuevas no coinciden.'; return; }
+    if (nueva.length<6) { msg.style.color='var(--red)'; msg.textContent='La nueva contraseña debe tener al menos 6 caracteres.'; return; }
+    const res=await fetch('/api/usuarios/cambiar-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({passwordActual:actual,passwordNueva:nueva})});
+    const data=await res.json();
+    if(data.ok){msg.style.color='var(--green)';msg.textContent='✓ Contraseña cambiada correctamente.';document.getElementById('pwActual').value='';document.getElementById('pwNueva').value='';document.getElementById('pwRepetir').value='';}
+    else{msg.style.color='var(--red)';msg.textContent=data.error||'Error al cambiar contraseña.';}
+  }
+
+  cargarUsuarios();
+</script>
+</body>
+</html>
