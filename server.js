@@ -141,7 +141,82 @@ async function scrapePoctep() {
   return convocatorias;
 }
 
-// ── NUTS España (fallback) ────────────────────────────────
+// ── Scraper SocialPower ───────────────────────────────────
+let socialCache = null;
+let socialCacheTime = 0;
+
+async function scrapeSocialPower() {
+  const now = Date.now();
+  if (socialCache && (now - socialCacheTime) < POCTEP_TTL) {
+    console.log('[SOCIALPOWER] Usando caché');
+    return socialCache;
+  }
+
+  console.log('[SOCIALPOWER] Descargando página...');
+  const { data: html } = await fetchUrl('https://socialpower.es/es/solicita-financiacion');
+
+  // Convertir HTML a texto plano
+  const texto = html
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<[^>]+>/g, '\n')
+    .replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ').replace(/&#\d+;/g, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
+  const lineas = texto.split('\n').map(l => l.trim()).filter(Boolean);
+  const convocatorias = [];
+
+  // Buscar patrón: estado → título "Convocatoria N" → fechas "Del ... al ..."
+  for (let i = 0; i < lineas.length; i++) {
+    const linea = lineas[i].toLowerCase();
+    const esEstado = linea === 'cerrada' || linea === 'próximamente' || linea === 'abierta';
+    if (!esEstado) continue;
+
+    const estadoRaw = lineas[i].toLowerCase();
+    // Buscar el título en las siguientes líneas
+    let titulo = '', fechasTexto = '', fechaApertura = '', fechaCierre = '';
+
+    for (let j = i + 1; j < Math.min(i + 5, lineas.length); j++) {
+      if (/convocatoria\s+\d+/i.test(lineas[j])) {
+        titulo = lineas[j];
+        // Buscar fechas justo después
+        for (let k = j + 1; k < Math.min(j + 4, lineas.length); k++) {
+          if (/del?\s+\d/i.test(lineas[k])) {
+            fechasTexto = lineas[k];
+            const fm = lineas[k].match(/Del?\s+(.+?)\s+al\s+(.+)/i);
+            if (fm) { fechaApertura = fm[1].trim(); fechaCierre = fm[2].trim(); }
+            break;
+          }
+        }
+        break;
+      }
+    }
+
+    if (!titulo) continue;
+
+    let estado = 'proxima';
+    if (estadoRaw === 'cerrada')  estado = 'cerrada';
+    if (estadoRaw === 'abierta')  estado = 'abierta';
+
+    convocatorias.push({
+      fuente: 'SocialPower',
+      titulo,
+      fechaApertura,
+      fechaCierre,
+      fechasTexto,
+      estado,
+      url: 'https://socialpower.es/es/solicita-financiacion',
+    });
+  }
+
+  console.log(`[SOCIALPOWER] ${convocatorias.length} convocatorias extraídas`);
+  socialCache = convocatorias;
+  socialCacheTime = now;
+  return convocatorias;
+}
+
+
 const NUTS_ES = [
   { id:2,  codigo:'ES11',  nombre:'Galicia' },
   { id:3,  codigo:'ES111', nombre:'A Coruña' },
@@ -190,6 +265,18 @@ const server = http.createServer(async (req, res) => {
     });
     res.end(body);
   };
+
+  // ── /api/socialpower ─────────────────────────────────────
+  if (pathname === '/api/socialpower') {
+    try {
+      const data = await scrapeSocialPower();
+      sendJSON(200, data);
+    } catch(e) {
+      console.error('[SOCIALPOWER] Error:', e.message);
+      sendJSON(502, { error: e.message });
+    }
+    return;
+  }
 
   // ── /api/poctep ──────────────────────────────────────────
   if (pathname === '/api/poctep') {
@@ -270,4 +357,4 @@ server.listen(PORT, () => {
   console.log(`\n✅ Servidor BDNS + POCTEP arrancado`);
   console.log(`   Abre en el navegador: http://localhost:${PORT}\n`);
   console.log(`   POCTEP endpoint: http://localhost:${PORT}/api/poctep\n`);
-});
+}); 

@@ -19,7 +19,8 @@ const CCAA = [
   { vpd:'VC',     name:'C. Valenciana',      flag:'🍊' },
   { vpd:'CE',     name:'Ceuta',              flag:'🏛️' },
   { vpd:'ML',     name:'Melilla',            flag:'🏛️' },
-  { vpd:'POCTEP', name:'POCTEP',             flag:'🇪🇺' },
+  { vpd:'POCTEP',      name:'POCTEP',        flag:'🇪🇺' },
+  { vpd:'SOCIALPOWER', name:'Social Power',  flag:'🤝' },
 ];
 
 const VPD_NUTS_CODIGO = {
@@ -352,6 +353,24 @@ async function iniciar() {
     return;
   }
 
+  // ── Modo SocialPower exclusivo ───────────────────────────
+  if (selVpd === 'SOCIALPOWER') {
+    try {
+      log(`<b>→</b> Cargando convocatorias <b>Social Power</b>...`);
+      await cargarSocialPower();
+      $('progLabel').textContent = '✓ Completado · Social Power';
+      $('fill').style.width = '100%';
+      $('progNum').textContent = '100%';
+      log(`<b>✓</b> Convocatorias Social Power cargadas`);
+    } catch(e) {
+      $('err').textContent = `Error Social Power: ${e.message}`;
+      $('err').classList.add('on');
+    }
+    running = false; $('btnRun').disabled = false;
+    $('btnStop').style.display = 'none';
+    return;
+  }
+
   try {
     log(`<b>→</b> Conectando — ámbito: <b>${ccNombre}</b> (vpd=${selVpd})`);
     const first = await fetchPage(0);
@@ -466,6 +485,56 @@ function addRowsPoctep(convs) {
   });
 }
 
+
+// ── SocialPower ───────────────────────────────────────────
+async function cargarSocialPower() {
+  try {
+    const res = await fetch('/api/socialpower');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const convs = await res.json();
+    if (!convs.length) return;
+    addRowsSocialPower(convs);
+    $('tbarR').textContent = fmt(convs.length) + ' registros';
+  } catch(e) {
+    console.warn('[SOCIALPOWER] Error cargando:', e.message);
+  }
+}
+
+function addRowsSocialPower(convs) {
+  const tb = $('tbody');
+  convs.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    tr.className = 'row-socialpower';
+
+    const estadoHtml = r.estado === 'abierta'
+      ? '<span class="bo">ABIERTA</span>'
+      : r.estado === 'cerrada'
+        ? '<span class="bc">CERRADA</span>'
+        : '<span class="bx">PRÓXIMA</span>';
+
+    const plazoHtml = r.estado === 'cerrada'
+      ? '<span class="bc">Cerrada</span>'
+      : r.fechaCierre
+        ? `<span class="bo">Abierta</span><div class="det-plazo">📅 hasta ${r.fechaCierre}</div>`
+        : '<span class="bx">⏳ Próximamente</span>';
+
+    tr.innerHTML = `
+      <td class="tn"><a class="conv-link socialpower-link" href="${r.url}" target="_blank">SP-${i+1}</a></td>
+      <td>
+        <div class="tnivel1 socialpower-badge">Social Power</div>
+        <div class="to">Financiación de proyectos sociales</div>
+      </td>
+      <td class="tregiones"><span class="reg-nivel2">España</span></td>
+      <td class="tt">${r.titulo}${r.fechasTexto ? `<span class="titulol">${r.fechasTexto}</span>` : ''}</td>
+      <td class="tf">—</td>
+      <td class="tplazo">${plazoHtml}</td>
+      <td class="tbases">
+        <div class="det-estado">${estadoHtml}</div>
+        <div class="det-links"><a class="bases-link" href="${r.url}" target="_blank">🔗 Ver convocatoria</a></div>
+      </td>`;
+    tb.appendChild(tr);
+  });
+}
 
 function dlCSV() {
   if (!datos.length) return;

@@ -531,3 +531,18 @@ body {
 /* ── Chip POCTEP ───────────────────────────────────────── */
 .poctep-chip { color: #0050a0; border-color: #0050a0; }
 .poctep-chip.active { background: #0050a0; color: #fff; border-color: #0050a0; }
+
+/* ── Filas SocialPower ─────────────────────────────────── */
+.row-socialpower { background: rgba(0, 140, 80, 0.03); }
+.row-socialpower:hover { background: rgba(0, 140, 80, 0.07); }
+.socialpower-badge {
+  display: inline-block;
+  background: #008c50;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+.socialpower-link { color: #008c50 !important; }
