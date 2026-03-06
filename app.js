@@ -1,24 +1,25 @@
 const CCAA = [
-  { vpd:'GE',  name:'Estado (AGE)',       flag:'🇪🇸' },
-  { vpd:'AN',  name:'Andalucía',          flag:'🌻' },
-  { vpd:'AR',  name:'Aragón',             flag:'⚜️' },
-  { vpd:'AS',  name:'Asturias',           flag:'🏔️' },
-  { vpd:'IB',  name:'Baleares',           flag:'🏝️' },
-  { vpd:'CN',  name:'Canarias',           flag:'🌋' },
-  { vpd:'CB',  name:'Cantabria',          flag:'⚓' },
-  { vpd:'CL',  name:'Castilla y León',    flag:'🏰' },
-  { vpd:'CM',  name:'Castilla-La Mancha', flag:'🌾' },
-  { vpd:'CT',  name:'Cataluña',           flag:'🔴' },
-  { vpd:'EX',  name:'Extremadura',        flag:'🐂' },
-  { vpd:'GA',  name:'Galicia',            flag:'🐚' },
-  { vpd:'MD',  name:'Madrid',             flag:'🐻' },
-  { vpd:'MC',  name:'Murcia',             flag:'☀️' },
-  { vpd:'NA',  name:'Navarra',            flag:'⛪' },
-  { vpd:'PV',  name:'País Vasco',         flag:'🌿' },
-  { vpd:'RI',  name:'La Rioja',           flag:'🍷' },
-  { vpd:'VC',  name:'C. Valenciana',      flag:'🍊' },
-  { vpd:'CE',  name:'Ceuta',              flag:'🏛️' },
-  { vpd:'ML',  name:'Melilla',            flag:'🏛️' },
+  { vpd:'GE',     name:'Estado (AGE)',       flag:'🇪🇸' },
+  { vpd:'AN',     name:'Andalucía',          flag:'🌻' },
+  { vpd:'AR',     name:'Aragón',             flag:'⚜️' },
+  { vpd:'AS',     name:'Asturias',           flag:'🏔️' },
+  { vpd:'IB',     name:'Baleares',           flag:'🏝️' },
+  { vpd:'CN',     name:'Canarias',           flag:'🌋' },
+  { vpd:'CB',     name:'Cantabria',          flag:'⚓' },
+  { vpd:'CL',     name:'Castilla y León',    flag:'🏰' },
+  { vpd:'CM',     name:'Castilla-La Mancha', flag:'🌾' },
+  { vpd:'CT',     name:'Cataluña',           flag:'🔴' },
+  { vpd:'EX',     name:'Extremadura',        flag:'🐂' },
+  { vpd:'GA',     name:'Galicia',            flag:'🐚' },
+  { vpd:'MD',     name:'Madrid',             flag:'🐻' },
+  { vpd:'MC',     name:'Murcia',             flag:'☀️' },
+  { vpd:'NA',     name:'Navarra',            flag:'⛪' },
+  { vpd:'PV',     name:'País Vasco',         flag:'🌿' },
+  { vpd:'RI',     name:'La Rioja',           flag:'🍷' },
+  { vpd:'VC',     name:'C. Valenciana',      flag:'🍊' },
+  { vpd:'CE',     name:'Ceuta',              flag:'🏛️' },
+  { vpd:'ML',     name:'Melilla',            flag:'🏛️' },
+  { vpd:'POCTEP', name:'POCTEP',             flag:'🇪🇺' },
 ];
 
 const VPD_NUTS_CODIGO = {
@@ -333,6 +334,24 @@ async function iniciar() {
   $('progLabel').textContent = `Consultando ${ccNombre}...`;
   updateUI();
 
+  // ── Modo POCTEP exclusivo ────────────────────────────────
+  if (selVpd === 'POCTEP') {
+    try {
+      log(`<b>→</b> Cargando convocatorias <b>POCTEP</b>...`);
+      await cargarPoctep();
+      $('progLabel').textContent = '✓ Completado · POCTEP';
+      $('fill').style.width = '100%';
+      $('progNum').textContent = '100%';
+      log(`<b>✓</b> Convocatorias POCTEP cargadas`);
+    } catch(e) {
+      $('err').textContent = `Error POCTEP: ${e.message}`;
+      $('err').classList.add('on');
+    }
+    running = false; $('btnRun').disabled = false;
+    $('btnStop').style.display = 'none';
+    return;
+  }
+
   try {
     log(`<b>→</b> Conectando — ámbito: <b>${ccNombre}</b> (vpd=${selVpd})`);
     const first = await fetchPage(0);
@@ -393,6 +412,60 @@ async function iniciar() {
 }
 
 function parar() { stopped = true; }
+
+// ── POCTEP ────────────────────────────────────────────────
+async function cargarPoctep() {
+  try {
+    const res = await fetch('/api/poctep');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const convs = await res.json();
+    if (!convs.length) return;
+    addRowsPoctep(convs);
+    $('tbarR').textContent = fmt(datos.length + convs.length) + ' registros';
+  } catch(e) {
+    console.warn('[POCTEP] Error cargando:', e.message);
+  }
+}
+
+function addRowsPoctep(convs) {
+  const tb = $('tbody');
+  convs.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    tr.className = 'row-poctep';
+    const estadoHtml = r.estado === 'abierta'
+      ? '<span class="bo">ABIERTA</span>'
+      : r.estado === 'cerrada'
+        ? '<span class="bc">CERRADA</span>'
+        : '<span class="bx">PRÓXIMA</span>';
+
+    const plazoHtml = r.estado === 'cerrada'
+      ? '<span class="bc">Cerrada</span>'
+      : r.fechaCierre
+        ? `<span class="bo">Abierta</span><div class="det-plazo">📅 hasta ${r.fechaCierre}</div>`
+        : r.estado === 'proxima'
+          ? '<span class="bx">⏳ Pendiente confirmar</span>'
+          : '<span class="bo">Abierta</span><div class="det-plazo">⏳ Plazo indefinido</div>';
+
+    tr.innerHTML = `
+      <td class="tn"><a class="conv-link poctep-link" href="${r.url}" target="_blank">POCTEP-${i+1}</a></td>
+      <td>
+        <div class="tnivel1 poctep-badge">POCTEP</div>
+        <div class="to">Interreg VI-A España-Portugal</div>
+      </td>
+      <td class="tregiones"><span class="reg-nivel2">España · Portugal</span></td>
+      <td class="tt">${r.titulo}${r.prioridad ? `<span class="titulol">${r.prioridad}</span>` : ''}</td>
+      <td class="tf">—</td>
+      <td class="tplazo">${plazoHtml}</td>
+      <td class="tbases">
+        <div class="det-estado">${estadoHtml}</div>
+        <div class="det-links"><a class="bases-link" href="${r.url}" target="_blank">🔗 Ver convocatoria</a></div>
+        ${r.fse ? `<div class="det-plazo">💰 ${r.fse}</div>` : ''}
+        ${r.resolucion ? `<div class="det-plazo" style="font-size:10px">📋 ${r.resolucion}</div>` : ''}
+      </td>`;
+    tb.appendChild(tr);
+  });
+}
+
 
 function dlCSV() {
   if (!datos.length) return;
