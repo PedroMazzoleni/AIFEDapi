@@ -142,6 +142,33 @@
     .back-link:hover { color: var(--gold-mid); border-color: var(--gold-mid); }
 
     .presupuesto-val { font-family: var(--mono); font-size: 11px; color: var(--ink-mid); }
+
+    /* ── Modal archivos ── */
+    .arch-list { display: flex; flex-direction: column; gap: 8px; }
+    .arch-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--paper); border: 1px solid var(--border-light); border-radius: 4px; }
+    .arch-icon { font-size: 22px; flex-shrink: 0; }
+    .arch-info { flex: 1; min-width: 0; }
+    .arch-nombre { font-size: 13px; color: var(--ink); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .arch-meta { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); margin-top: 2px; }
+    .arch-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .upload-area {
+      border: 2px dashed var(--border);
+      border-radius: 6px;
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: var(--paper);
+    }
+    .upload-area:hover, .upload-area.dragover { border-color: var(--blue-mid); background: var(--blue-light); }
+    .upload-area-icon { font-size: 28px; margin-bottom: 8px; }
+    .upload-area-text { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); }
+    .upload-area-text strong { color: var(--blue-mid); cursor: pointer; }
+    .upload-progress { display: none; margin-top: 10px; }
+    .upload-progress.visible { display: block; }
+    .prog-bar { height: 4px; background: var(--border-light); border-radius: 2px; overflow: hidden; margin-top: 6px; }
+    .prog-bar-fill { height: 100%; background: var(--blue); border-radius: 2px; transition: width 0.3s; }
+    .upload-msg { font-family: var(--mono); font-size: 11px; margin-top: 6px; }
   </style>
 </head>
 <body>
@@ -367,7 +394,7 @@ function tarjetaProyecto(p) {
   const avatares = miembros.slice(0, maxAv).map(m => {
     const inicial = (m.usuario||'?').charAt(0).toUpperCase();
     const cls = m.rol_proyecto === 'responsable' ? 'responsable' : '';
-    return `<span class="miembro-av ${cls}" title="${esc(m.usuario||'')}${m.rol_proyecto==='responsable'?' ⭐':''}">${inicial}</span>`;
+    return `<span class="miembro-av ${cls}" title="${m.usuario}${m.rol_proyecto==='responsable'?' ⭐':''}">${inicial}</span>`;
   }).join('');
   const extra = miembros.length > maxAv
     ? `<span class="miembro-av miembro-av-more" title="${miembros.length - maxAv} más">+${miembros.length - maxAv}</span>`
@@ -379,9 +406,11 @@ function tarjetaProyecto(p) {
   const btnAcciones = esAdmin ? `
     <button class="btn btn-sm btn-ghost" onclick="abrirModalEditar(${p.id})">✏ Editar</button>
     <button class="btn btn-sm btn-ghost" onclick="abrirModalMiembros(${p.id})" style="color:var(--blue);">👥 Miembros</button>
-    <button class="btn btn-sm btn-danger" onclick="eliminarProyecto(${p.id},'${escJs(p.nombre)}')">✕</button>
+    <button class="btn btn-sm btn-ghost" onclick="abrirModalArchivos(${p.id})" style="color:var(--green);">📎 Archivos</button>
+    <button class="btn btn-sm btn-danger" onclick="eliminarProyecto(${p.id},'${esc(p.nombre)}')">✕</button>
   ` : `
     <button class="btn btn-sm btn-ghost" onclick="abrirModalMiembros(${p.id})">👥 Ver miembros</button>
+    <button class="btn btn-sm btn-ghost" onclick="abrirModalArchivos(${p.id})" style="color:var(--green);">📎 Archivos</button>
   `;
 
   return `
@@ -565,17 +594,181 @@ function showMsg(id, text, type) {
 
 function esc(str) {
   if (!str) return '';
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
-function escJs(str) {
-  if (!str) return '';
-  return String(str).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/\r/g,'').replace(/\n/g,'\\n');
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // Cerrar modal al clicar backdrop
 document.querySelectorAll('.modal-backdrop').forEach(b => {
   b.addEventListener('click', e => { if (e.target === b) b.classList.remove('open'); });
 });
+
+// ── ARCHIVOS DE PROYECTO ──────────────────────────────────
+let proyectoArchivos = null;
+
+async function abrirModalArchivos(id) {
+  proyectoArchivos = id;
+  const p = todosProyectos.find(x => x.id === id);
+  document.getElementById('modalArchivosTitulo').textContent = `Archivos · ${p ? p.nombre : ''}`;
+  document.getElementById('uploadProgress').classList.remove('visible');
+  document.getElementById('fileInput').value = '';
+  abrirModal('modalArchivos');
+  await cargarArchivos(id);
+}
+
+async function cargarArchivos(id) {
+  document.getElementById('listaArchivos').innerHTML =
+    '<div style="padding:16px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--ink-faint);">Cargando…</div>';
+  const res  = await fetch(`/api/proyectos/${id}/archivos`);
+  const data = await res.json();
+  renderArchivos(Array.isArray(data) ? data : []);
+}
+
+function renderArchivos(lista) {
+  const el = document.getElementById('listaArchivos');
+  if (!lista.length) {
+    el.innerHTML = '<div style="padding:16px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--ink-faint);">Sin archivos subidos</div>';
+    return;
+  }
+  el.innerHTML = lista.map(a => {
+    const icon  = a.tipo === 'PDF' ? '📕' : a.tipo === 'Word' ? '📘' : '📄';
+    const size  = a.tamanyo ? fmtSize(a.tamanyo) : '';
+    const fecha = a.created_at ? new Date(a.created_at).toLocaleDateString('es-ES') : '';
+    return `
+      <div class="arch-item">
+        <div class="arch-icon">${icon}</div>
+        <div class="arch-info">
+          <div class="arch-nombre" title="${esc(a.nombre)}">${esc(a.nombre)}</div>
+          <div class="arch-meta">${a.tipo||'Archivo'} · ${size} · ${fecha} · ${esc(a.usuario||'')}</div>
+        </div>
+        <div class="arch-actions">
+          ${a.url ? `<a class="btn btn-sm btn-ghost" href="${esc(a.url)}" target="_blank" download="${esc(a.nombre)}">↓ Descargar</a>` : ''}
+          ${esAdmin ? `<button class="btn btn-sm btn-danger" onclick="eliminarArchivo(${a.id})">✕</button>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function subirArchivo(file) {
+  if (!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (!['pdf','doc','docx'].includes(ext)) {
+    alert('Solo se permiten archivos PDF y Word (.doc, .docx)');
+    return;
+  }
+  if (file.size > 20 * 1024 * 1024) {
+    alert('El archivo supera el límite de 20 MB');
+    return;
+  }
+
+  const progress = document.getElementById('uploadProgress');
+  const msg      = document.getElementById('uploadMsg');
+  const fill     = document.getElementById('progBarFill');
+
+  progress.classList.add('visible');
+  msg.textContent  = `Subiendo "${file.name}"…`;
+  msg.style.color  = 'var(--ink-mid)';
+  fill.style.width = '30%';
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    fill.style.width = '60%';
+    const res  = await fetch(`/api/proyectos/${proyectoArchivos}/archivos`, {
+      method: 'POST',
+      body: formData,
+    });
+    fill.style.width = '90%';
+    const data = await res.json();
+
+    if (data.ok) {
+      fill.style.width = '100%';
+      msg.textContent  = '✓ Archivo subido correctamente';
+      msg.style.color  = 'var(--green)';
+      document.getElementById('fileInput').value = '';
+      setTimeout(() => {
+        progress.classList.remove('visible');
+        fill.style.width = '0%';
+      }, 2000);
+      await cargarArchivos(proyectoArchivos);
+    } else {
+      fill.style.width = '0%';
+      msg.textContent  = data.error || 'Error al subir';
+      msg.style.color  = 'var(--red)';
+    }
+  } catch(e) {
+    msg.textContent = 'Error de conexión';
+    msg.style.color = 'var(--red)';
+  }
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadArea').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) subirArchivo(file);
+}
+
+async function eliminarArchivo(id) {
+  if (!confirm('¿Eliminar este archivo? No se puede deshacer.')) return;
+  const res  = await fetch(`/api/proyectos/${proyectoArchivos}/archivos/${id}`, { method: 'DELETE' });
+  const data = await res.json();
+  if (data.ok) cargarArchivos(proyectoArchivos);
+  else alert(data.error || 'Error al eliminar');
+}
+
+function fmtSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/(1024*1024)).toFixed(1) + ' MB';
+}
 </script>
+
+<!-- ═══════════════════════════════════════════════
+     MODAL ARCHIVOS DE PROYECTO
+═══════════════════════════════════════════════ -->
+<div class="modal-backdrop" id="modalArchivos">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-head">
+      <span class="modal-title" id="modalArchivosTitulo">Archivos del proyecto</span>
+      <button class="modal-close" onclick="cerrarModal('modalArchivos')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Zona de subida -->
+      <div id="uploadSection">
+        <div class="upload-area" id="uploadArea"
+          onclick="document.getElementById('fileInput').click()"
+          ondragover="event.preventDefault();this.classList.add('dragover')"
+          ondragleave="this.classList.remove('dragover')"
+          ondrop="handleDrop(event)">
+          <div class="upload-area-icon">📄</div>
+          <div class="upload-area-text">
+            Arrastra un archivo aquí o <strong>haz clic para seleccionar</strong><br>
+            PDF · Word (.doc, .docx) · Máx. 20 MB
+          </div>
+        </div>
+        <input type="file" id="fileInput" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none" onchange="subirArchivo(this.files[0])">
+        <div class="upload-progress" id="uploadProgress">
+          <div class="upload-msg" id="uploadMsg">Subiendo…</div>
+          <div class="prog-bar"><div class="prog-bar-fill" id="progBarFill" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <!-- Lista de archivos -->
+      <div style="margin-top:14px;">
+        <div style="font-family:var(--mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:8px;">Archivos subidos</div>
+        <div class="arch-list" id="listaArchivos">
+          <div style="padding:16px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--ink-faint);">Cargando…</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="cerrarModal('modalArchivos')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

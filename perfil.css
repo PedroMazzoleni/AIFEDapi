@@ -1,0 +1,398 @@
+/* ══════════════════════════════════════════════════════
+   perfil.css — Estilos de la página de perfil de usuario
+   Depende de styles.css (variables globales)
+   ══════════════════════════════════════════════════════ */
+
+/* ── Layout ──────────────────────────────────────────── */
+.perfil-header {
+    background: var(--ink);
+    border-bottom: 3px solid var(--gold);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .perfil-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 32px 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  /* ── Tarjeta identidad ───────────────────────────────── */
+  .id-card {
+    background: var(--ink);
+    border-radius: var(--r);
+    padding: 28px 32px;
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .id-card::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 220px; height: 100%;
+    background: linear-gradient(135deg, transparent 0%, rgba(184,150,12,0.06) 100%);
+    pointer-events: none;
+  }
+  
+  .id-avatar {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--serif);
+    font-size: 26px;
+    font-weight: 300;
+    color: var(--ink);
+    flex-shrink: 0;
+  }
+  
+  .id-info { flex: 1; }
+  
+  .id-nombre {
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 300;
+    color: white;
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+  
+  .id-cargo {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold-mid);
+    margin-bottom: 12px;
+  }
+  
+  .id-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  
+  .id-pill {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 2px;
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.45);
+  }
+  
+  .id-pill.gold {
+    border-color: rgba(184,150,12,0.4);
+    color: var(--gold-mid);
+  }
+  
+  .id-actions {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    flex-shrink: 0;
+  }
+  
+  /* ── Layout dos columnas ─────────────────────────────── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 20px;
+  }
+  
+  @media (max-width: 800px) {
+    .two-col { grid-template-columns: 1fr; }
+  }
+  
+  /* ── Cards ───────────────────────────────────────────── */
+  .p-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    overflow: hidden;
+  }
+  
+  .p-card-head {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--paper);
+  }
+  
+  .p-card-title {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  
+  .p-card-body { padding: 20px; }
+  
+  /* ── Campos perfil ───────────────────────────────────── */
+  .field-row { margin-bottom: 14px; }
+  
+  .field-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 5px;
+  }
+  
+  .field-val {
+    font-size: 13px;
+    color: var(--ink);
+    padding: 8px 12px;
+    background: var(--paper);
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+    min-height: 34px;
+  }
+  
+  .field-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 4px;
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--ink);
+    background: white;
+    outline: none;
+  }
+  
+  .field-input:focus { border-color: var(--blue-mid); }
+  
+  .field-input:disabled {
+    background: var(--paper);
+    color: var(--ink-light);
+    cursor: not-allowed;
+  }
+  
+  /* ── Botones ─────────────────────────────────────────── */
+  .btn {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 4px;
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  
+  .btn-primary { background: var(--ink); color: white; }
+  .btn-primary:hover { background: var(--blue); }
+  
+  .btn-sm { padding: 5px 12px; font-size: 11px; }
+  
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink-mid);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { border-color: var(--ink-mid); color: var(--ink); }
+  
+  .btn-danger {
+    background: transparent;
+    color: var(--red);
+    border: 1px solid rgba(122,26,26,0.3);
+  }
+  .btn-danger:hover { background: var(--red-light); }
+  
+  .btn-gold { background: var(--gold); color: var(--ink); }
+  .btn-gold:hover { background: var(--gold-mid); }
+  
+  /* ── Tabs ────────────────────────────────────────────── */
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: var(--paper);
+  }
+  
+  .tab {
+    padding: 10px 18px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.12s;
+    white-space: nowrap;
+  }
+  
+  .tab:hover { color: var(--ink-mid); }
+  .tab.active { color: var(--ink); border-bottom-color: var(--gold); }
+  
+  .tab-panel { display: none; padding: 20px; }
+  .tab-panel.active { display: block; }
+  
+  /* ── Lista de items ──────────────────────────────────── */
+  .item-list { display: flex; flex-direction: column; gap: 10px; }
+  
+  .item {
+    background: var(--paper);
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+    padding: 12px 14px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  
+  .item-body { flex: 1; min-width: 0; }
+  
+  .item-titulo {
+    font-size: 13px;
+    color: var(--ink);
+    font-weight: 500;
+    margin-bottom: 3px;
+  }
+  
+  .item-meta {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-faint);
+  }
+  
+  .item-desc {
+    font-size: 12px;
+    color: var(--ink-mid);
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+  
+  .item-actions { display: flex; gap: 4px; flex-shrink: 0; }
+  
+  /* ── Badges ──────────────────────────────────────────── */
+  .badge {
+    display: inline-flex;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 2px;
+    font-weight: 500;
+  }
+  
+  .badge-green  { background: var(--green-light);  color: var(--green);     border: 1px solid var(--green); }
+  .badge-blue   { background: var(--blue-light);   color: var(--blue);      border: 1px solid var(--blue); }
+  .badge-gold   { background: var(--gold-light);   color: var(--gold);      border: 1px solid var(--gold); }
+  .badge-warn   { background: var(--warn-light);   color: var(--warn);      border: 1px solid var(--warn); }
+  .badge-red    { background: var(--red-light);    color: var(--red);       border: 1px solid var(--red); }
+  .badge-gray   { background: var(--paper-warm);   color: var(--ink-faint); border: 1px solid var(--border); }
+  
+  /* ── Formulario añadir ───────────────────────────────── */
+  .add-form {
+    background: var(--paper);
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+    padding: 14px;
+    margin-bottom: 14px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .add-form.open { display: flex; }
+  
+  .add-form-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  
+  .add-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 140px;
+  }
+  
+  .add-form-group label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  
+  .add-form-group input,
+  .add-form-group select,
+  .add-form-group textarea {
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--ink);
+    background: white;
+    outline: none;
+  }
+  
+  .add-form-group input:focus,
+  .add-form-group select:focus,
+  .add-form-group textarea:focus { border-color: var(--blue-mid); }
+  
+  .add-form-group textarea { resize: vertical; min-height: 60px; }
+  
+  .add-form-btns { display: flex; gap: 8px; }
+  
+  /* ── Empty state ─────────────────────────────────────── */
+  .empty {
+    padding: 28px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+  }
+  
+  /* ── Mensajes feedback ───────────────────────────────── */
+  .msg {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    margin-top: 8px;
+    display: none;
+  }
+  
+  .msg.ok  { background: var(--green-light); color: var(--green); border: 1px solid var(--green); display: block; }
+  .msg.err { background: var(--red-light);   color: var(--red);   border: 1px solid var(--red);   display: block; }
+  
+  /* ── Cabecera links ──────────────────────────────────── */
+  .back-link {
+    color: rgba(255,255,255,0.4);
+    font-family: var(--mono);
+    font-size: 11px;
+    text-decoration: none;
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 6px 14px;
+    border-radius: 4px;
+  }
+  
+  .back-link:hover {
+    color: var(--gold-mid);
+    border-color: var(--gold-mid);
+  }
+  
+  /* ── URLs de archivos ────────────────────────────────── */
+  .url-link {
+    color: var(--blue-mid);
+    font-size: 12px;
+    word-break: break-all;
+  }
+  
+  .url-link:hover { text-decoration: underline; }

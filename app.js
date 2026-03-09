@@ -136,7 +136,6 @@ function addRows(rows) {
     const ccaa      = r.nivel2 || '—';
     const organo    = r.nivel3 || '—';
     const importe = r.presupuestoTotal ?? r.importeTotal ?? r.importe ?? null;
-    const fecha  = fmtF(r.fechaRecepcion || r.fechaRegistro || '');
     const estado = r.descripcionEstado || r.estado || '';
     const tr = document.createElement('tr');
     const convId = r.id;
@@ -149,7 +148,7 @@ function addRows(rows) {
       </td>
       <td class="tregiones" id="regiones-${convId}"><span class="reg-nivel2">${ccaa !== '—' ? ccaa : '—'}</span></td>
       <td class="tt">${titulo}${tituloL ? `<span class="titulol">${tituloL}</span>` : ''}</td>
-      <td class="tf">${fecha}</td>
+      <td class="tf" id="fecha-${convId}"><span class="bases-loading">···</span></td>
       <td class="tplazo" id="plazo-${convId}"><span class="bases-loading">···</span></td>
       <td class="tbases" id="bases-${convId}"><span class="bases-loading">···</span></td>`;
     tb.appendChild(tr);
@@ -158,7 +157,7 @@ function addRows(rows) {
 
 // ── Detalle convocatoria ─────────────────────────────────
 async function fetchDetalles(rows) {
-  const LOTE = 3;
+  const LOTE = 5;
   for (let i = 0; i < rows.length; i += LOTE) {
     const lote = rows.slice(i, i + LOTE);
     await Promise.all(lote.map(async r => {
@@ -174,6 +173,14 @@ async function fetchDetalles(rows) {
         r.tipoConvocatoria        = d.tipoConvocatoria || '';
         r.fechaInicioSolicitud    = d.fechaInicioSolicitud || '';
         r.fechaFinSolicitud       = d.fechaFinSolicitud || '';
+
+        // Actualizar celda de fechas de solicitud
+        const fechaCell = document.getElementById(`fecha-${r.id}`);
+        if (fechaCell) {
+          const ini = r.fechaInicioSolicitud ? `<div class="fecha-row"><span class="fecha-label">Apertura</span><span class="fecha-val">${fmtF(r.fechaInicioSolicitud)}</span></div>` : '';
+          const fin = r.fechaFinSolicitud    ? `<div class="fecha-row"><span class="fecha-label">Cierre</span><span class="fecha-val">${fmtF(r.fechaFinSolicitud)}</span></div>`    : '';
+          fechaCell.innerHTML = ini || fin ? ini + fin : `<span class="bases-none">${fmtF(r.fechaRecepcion || r.fechaRegistro || '')}</span>`;
+        }
         r.textInicio              = d.textInicio || '';
         r.textFin                 = d.textFin || '';
         r.descripcionFinalidad    = d.descripcionFinalidad || '';
@@ -230,18 +237,34 @@ async function fetchDetalles(rows) {
           ? `<a class="bases-link" href="${r.urlBOE}" target="_blank">📰 BOE</a>`
           : '';
 
+        // Guardar datos del detalle en el tr para el modal de proyecto
+        const trEl = document.querySelector(`tr[data-conv-id="${r.id}"]`);
+        if (trEl) {
+          trEl.dataset.convTitulo     = r.descripcion || '';
+          trEl.dataset.convOrgano     = r.nivel3 || r.nivel2 || '';
+          trEl.dataset.convImporte    = r.presupuestoTotal ?? r.importeTotal ?? r.importe ?? '';
+          trEl.dataset.convFechaInicio = d.fechaInicioSolicitud || r.fechaRecepcion || '';
+          trEl.dataset.convFechaFin    = d.fechaFinSolicitud || '';
+          trEl.dataset.convNum         = r.numeroConvocatoria || r.id || '';
+        }
+
+        const proyBtn = (sessionStorage.getItem('bdns_rol') === 'admin')
+          ? `<button class="bases-link proy-btn" onclick="abrirModalProyectoConv('${r.id}')">📁 Crear proyecto</button>`
+          : '';
+
         cell.innerHTML = `
           <div class="det-estado">${estadoHtml}</div>
           <div class="det-links">${basesHtml}${sedeHtml ? ' ' + sedeHtml : ''}${boeHtml ? ' ' + boeHtml : ''}</div>
           ${d.fechaFinSolicitud ? `<div class="det-plazo">📅 hasta ${fmtF(d.fechaFinSolicitud)}</div>` : d.textFin ? `<div class="det-plazo">⏱ ${d.textFin}</div>` : ''}
           ${d.tiposBeneficiarios?.length ? `<div class="det-ben" title="${r.tiposBeneficiarios}">👥 ${(d.tiposBeneficiarios[0]?.descripcion||'').slice(0,40)}${r.tiposBeneficiarios.length > 40 ? '…' : ''}</div>` : ''}
+          ${proyBtn}
         `;
       } catch(e) {
         cell.innerHTML = '<span class="bases-none">—</span>';
       }
     }));
     filtrarPorEstado();
-    await new Promise(resolve => setTimeout(resolve, 350));
+    await new Promise(resolve => setTimeout(resolve, 150));
   }
 }
 
@@ -439,9 +462,8 @@ async function cargarPoctep() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const convs = await res.json();
     if (!convs.length) return;
-    datos.push(...convs);
     addRowsPoctep(convs);
-    $('tbarR').textContent = fmt(convs.length) + ' registros';
+    $('tbarR').textContent = fmt(datos.length + convs.length) + ' registros';
   } catch(e) {
     console.warn('[POCTEP] Error cargando:', e.message);
   }
@@ -481,6 +503,7 @@ function addRowsPoctep(convs) {
         <div class="det-links"><a class="bases-link" href="${r.url}" target="_blank">🔗 Ver convocatoria</a></div>
         ${r.fse ? `<div class="det-plazo">💰 ${r.fse}</div>` : ''}
         ${r.resolucion ? `<div class="det-plazo" style="font-size:10px">📋 ${r.resolucion}</div>` : ''}
+        ${sessionStorage.getItem('bdns_rol')==='admin' ? `<button class="proy-btn" onclick="abrirModalProyectoConvDirect('${r.titulo.replace(/'/g,'')}','POCTEP','','','${r.fechaCierre||''}','POCTEP-${i+1}')">📁 Crear proyecto</button>` : ''}
       </td>`;
     tb.appendChild(tr);
   });
@@ -494,7 +517,6 @@ async function cargarSocialPower() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const convs = await res.json();
     if (!convs.length) return;
-    datos.push(...convs);
     addRowsSocialPower(convs);
     $('tbarR').textContent = fmt(convs.length) + ' registros';
   } catch(e) {
@@ -533,6 +555,7 @@ function addRowsSocialPower(convs) {
       <td class="tbases">
         <div class="det-estado">${estadoHtml}</div>
         <div class="det-links"><a class="bases-link" href="${r.url}" target="_blank">🔗 Ver convocatoria</a></div>
+        ${sessionStorage.getItem('bdns_rol')==='admin' ? `<button class="proy-btn" onclick="abrirModalProyectoConvDirect('${r.titulo.replace(/'/g,"")}','SocialPower','','','${r.fechaCierre||""}','SP-${i+1}')">📁 Crear proyecto</button>` : ''}
       </td>`;
     tb.appendChild(tr);
   });
@@ -576,3 +599,212 @@ function hoy() { return new Date().toISOString().split('T')[0]; }
 
 // ── Init ─────────────────────────────────────────────────
 cargarRegiones();
+
+// ── Modal: Crear proyecto desde convocatoria ─────────────
+
+(function injectProyModal() {
+
+  // HTML del modal
+  const modalHTML = `
+  <style>
+    .proy-modal-backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(22,33,62,0.55); z-index: 200;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .proy-modal-backdrop.open { display: flex; }
+    .proy-modal {
+      background: white; border-radius: 8px; width: 100%; max-width: 560px;
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+      font-family: var(--sans, 'DM Sans', sans-serif);
+    }
+    .proy-modal-head {
+      padding: 18px 22px 14px; border-bottom: 1px solid #e8e4dc;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; background: white; z-index: 1;
+    }
+    .proy-modal-title { font-family: var(--serif, 'Fraunces', serif); font-size: 17px; font-weight: 300; color: #16213e; }
+    .proy-modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: #aaa; padding: 4px 8px; border-radius: 4px; }
+    .proy-modal-close:hover { background: #f5f2ec; }
+    .proy-modal-body { padding: 18px 22px; display: flex; flex-direction: column; gap: 12px; }
+    .proy-modal-footer { padding: 12px 22px; border-top: 1px solid #e8e4dc; display: flex; gap: 8px; justify-content: flex-end; background: #f5f2ec; border-radius: 0 0 8px 8px; }
+    .proy-form-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .proy-form-group { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px; }
+    .proy-form-group label { font-family: var(--mono,'DM Mono',monospace); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: #8a8076; }
+    .proy-form-group input, .proy-form-group select, .proy-form-group textarea {
+      padding: 7px 10px; border: 1.5px solid #e8e4dc; border-radius: 4px;
+      font-family: var(--sans,'DM Sans',sans-serif); font-size: 13px; color: #16213e;
+      background: white; outline: none; width: 100%;
+    }
+    .proy-form-group input:focus, .proy-form-group select:focus, .proy-form-group textarea:focus { border-color: #1a3f7a; }
+    .proy-form-group textarea { resize: vertical; min-height: 64px; }
+    .proy-conv-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #eef2f8; border: 1px solid #c4d0e8; border-radius: 4px;
+      padding: 5px 10px; font-family: var(--mono,'DM Mono',monospace); font-size: 10px; color: #1a3f7a;
+    }
+    .proy-btn-primary { padding: 8px 18px; background: #16213e; color: white; border: none; border-radius: 4px; font-family: var(--sans,'DM Sans',sans-serif); font-size: 12px; font-weight: 500; cursor: pointer; }
+    .proy-btn-primary:hover { background: #1a3f7a; }
+    .proy-btn-ghost { padding: 8px 18px; background: transparent; color: #6b6460; border: 1px solid #e8e4dc; border-radius: 4px; font-family: var(--sans,'DM Sans',sans-serif); font-size: 12px; cursor: pointer; }
+    .proy-btn-ghost:hover { border-color: #6b6460; }
+    .proy-msg { font-family: var(--mono,'DM Mono',monospace); font-size: 11px; padding: 6px 10px; border-radius: 4px; display: none; }
+    .proy-msg.ok  { background: #e8f5e9; color: #2e7d32; border: 1px solid #2e7d32; display: block; }
+    .proy-msg.err { background: #fce8e6; color: #7a1a1a; border: 1px solid #7a1a1a; display: block; }
+
+  </style>
+  <div class="proy-modal-backdrop" id="pmBackdrop">
+    <div class="proy-modal">
+      <div class="proy-modal-head">
+        <span class="proy-modal-title">📁 Crear proyecto desde convocatoria</span>
+        <button class="proy-modal-close" onclick="cerrarPM()">✕</button>
+      </div>
+      <div class="proy-modal-body">
+        <div class="proy-conv-tag" id="pmConvTag">📋 Convocatoria: <span id="pmConvNum"></span></div>
+        <div class="proy-form-group">
+          <label>Nombre del proyecto *</label>
+          <input type="text" id="pmNombre" placeholder="Nombre del proyecto">
+        </div>
+        <div class="proy-form-group">
+          <label>Descripción</label>
+          <textarea id="pmDesc" placeholder="Descripción…"></textarea>
+        </div>
+        <div class="proy-form-row">
+          <div class="proy-form-group">
+            <label>Cliente / Organismo</label>
+            <input type="text" id="pmCliente">
+          </div>
+          <div class="proy-form-group">
+            <label>Presupuesto (€)</label>
+            <input type="number" id="pmPresupuesto" min="0" step="0.01">
+          </div>
+        </div>
+        <div class="proy-form-row">
+          <div class="proy-form-group">
+            <label>Estado</label>
+            <select id="pmEstado">
+              <option value="activo">Activo</option>
+              <option value="pausado">Pausado</option>
+              <option value="completado">Completado</option>
+            </select>
+          </div>
+          <div class="proy-form-group">
+            <label>Prioridad</label>
+            <select id="pmPrioridad">
+              <option value="baja">Baja</option>
+              <option value="media" selected>Media</option>
+              <option value="alta">Alta</option>
+            </select>
+          </div>
+        </div>
+        <div class="proy-form-row">
+          <div class="proy-form-group">
+            <label>Fecha inicio</label>
+            <input type="date" id="pmInicio">
+          </div>
+          <div class="proy-form-group">
+            <label>Fecha fin (plazo conv.)</label>
+            <input type="date" id="pmFin">
+          </div>
+        </div>
+        <div class="proy-msg" id="pmMsg"></div>
+      </div>
+      <div class="proy-modal-footer">
+        <button class="proy-btn-ghost" onclick="cerrarPM()">Cancelar</button>
+        <button class="proy-btn-primary" onclick="guardarPM()">💾 Crear proyecto</button>
+      </div>
+    </div>
+  </div>`;
+
+  const div = document.createElement('div');
+  div.innerHTML = modalHTML;
+  document.body.appendChild(div);
+
+  // Cerrar al clicar backdrop
+  document.getElementById('pmBackdrop').addEventListener('click', e => {
+    if (e.target.id === 'pmBackdrop') cerrarPM();
+  });
+})();
+
+function abrirModalProyectoConv(convId) {
+  const tr = document.querySelector(`tr[data-conv-id="${convId}"]`);
+  if (!tr) return;
+  const titulo   = tr.dataset.convTitulo    || '';
+  const organo   = tr.dataset.convOrgano    || '';
+  const importe  = tr.dataset.convImporte   || '';
+  const fechaFin = tr.dataset.convFechaFin  || '';
+  const num      = tr.dataset.convNum       || convId;
+  abrirModalProyectoConvDirect(titulo, organo, importe, '', fechaFin, num);
+}
+
+function abrirModalProyectoConvDirect(titulo, organo, importe, fechaInicio, fechaFin, num) {
+  document.getElementById('pmConvNum').textContent = num || '—';
+  document.getElementById('pmNombre').value      = titulo.substring(0, 120) || '';
+  document.getElementById('pmCliente').value     = organo || '';
+  document.getElementById('pmPresupuesto').value = importe || '';
+  document.getElementById('pmInicio').value      = fechaFin ? '' : '';
+  document.getElementById('pmFin').value         = fechaFin ? isoDate(fechaFin) : '';
+  document.getElementById('pmEstado').value      = 'activo';
+  document.getElementById('pmPrioridad').value   = 'media';
+  document.getElementById('pmDesc').value        = titulo ? `Proyecto basado en la convocatoria: ${titulo}` : '';
+  document.getElementById('pmMsg').className     = 'proy-msg';
+  document.getElementById('pmBackdrop').classList.add('open');
+  document.getElementById('pmNombre').focus();
+}
+
+function cerrarPM() {
+  document.getElementById('pmBackdrop').classList.remove('open');
+}
+
+async function guardarPM() {
+  const nombre = document.getElementById('pmNombre').value.trim();
+  if (!nombre) {
+    const msg = document.getElementById('pmMsg');
+    msg.textContent = 'El nombre es obligatorio'; msg.className = 'proy-msg err'; return;
+  }
+
+  const body = {
+    nombre,
+    descripcion:  document.getElementById('pmDesc').value.trim() || null,
+    cliente:      document.getElementById('pmCliente').value.trim() || null,
+    presupuesto:  parseFloat(document.getElementById('pmPresupuesto').value) || null,
+    fecha_inicio: document.getElementById('pmInicio').value || null,
+    fecha_fin:    document.getElementById('pmFin').value || null,
+    estado:       document.getElementById('pmEstado').value,
+    prioridad:    document.getElementById('pmPrioridad').value,
+    etiquetas:    'BDNS,' + document.getElementById('pmConvNum').textContent,
+  };
+
+  try {
+    const res  = await fetch('/api/proyectos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    const msg  = document.getElementById('pmMsg');
+
+    if (data.ok) {
+      msg.textContent = '✓ Proyecto creado correctamente';
+      msg.className   = 'proy-msg ok';
+      setTimeout(() => {
+        cerrarPM();
+      }, 1800);
+    } else {
+      msg.textContent = data.error || 'Error al crear el proyecto';
+      msg.className   = 'proy-msg err';
+    }
+  } catch(e) {
+    const msg = document.getElementById('pmMsg');
+    msg.textContent = 'Error de conexión'; msg.className = 'proy-msg err';
+  }
+}
+
+// Convierte fechas dd/mm/yyyy o yyyy-mm-dd a yyyy-mm-dd para inputs date
+function isoDate(str) {
+  if (!str) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  const parts = str.split('/');
+  if (parts.length === 3) return `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+  return '';
+}

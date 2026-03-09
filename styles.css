@@ -403,7 +403,7 @@ body {
 .col-titulo  { }
 .col-importe { width: 120px; }
 .col-fecha   { width: 100px; }
-.col-detalle { width: 210px; }
+.col-detalle { width: 240px; }
 
 .conv-link {
   font-family: var(--mono); font-size: 11px; color: var(--blue);
@@ -456,12 +456,34 @@ body {
 }
 .bases-link:hover { border-color: var(--blue-mid); color: var(--blue); background: var(--blue-light); }
 
+.proy-btn {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.05em;
+  text-transform: uppercase; padding: 3px 8px; border-radius: 2px;
+  border: 1px solid rgba(46,125,50,0.45);
+  color: #2e7d32; background: #f1f8f1;
+  cursor: pointer; white-space: nowrap; margin-top: 5px;
+  transition: all 0.1s;
+}
+.proy-btn:hover { background: #e8f5e9; border-color: #2e7d32; }
+
 .bases-none    { font-family: var(--mono); font-size: 11px; color: var(--border); }
 .bases-loading { font-family: var(--mono); font-size: 10px; color: var(--border); animation: blink 1.4s infinite; }
 
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
 .det-plazo { font-size: 10px; color: var(--ink-faint); margin-top: 3px; }
+
+.fecha-row  { display: flex; align-items: baseline; gap: 5px; margin-bottom: 3px; }
+.fecha-row:last-child { margin-bottom: 0; }
+.fecha-label {
+  font-family: var(--mono); font-size: 8px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink-faint);
+  min-width: 46px; flex-shrink: 0;
+}
+.fecha-val {
+  font-family: var(--mono); font-size: 11px; color: var(--ink-mid);
+}
 .det-ben   { font-size: 10px; color: var(--ink-faint); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
 
 /* ── Footer ────────────────────────────────────────────── */
