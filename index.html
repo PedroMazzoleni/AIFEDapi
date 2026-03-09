@@ -22,10 +22,17 @@
         </div>
       </div>
       <div class="header-meta">
-        <span class="meta-user" id="usuarioActual"></span>
-        <a href="/admin.html" id="adminLink" class="admin-link-header" style="display:none">⚙ Panel Admin</a>
         <div class="meta-pill">API pública</div>
         <span class="meta-url">infosubvenciones.es</span>
+        <div class="user-bar">
+          <a href="/perfil.html" class="user-bar-btn" id="perfilLink" title="Mi perfil">
+            <span class="user-bar-avatar" id="userAvatar">?</span>
+            <span id="usuarioActual"></span>
+          </a>
+          <a href="/admin.html" class="user-bar-btn" id="adminLink" style="display:none">⚙ Admin</a>
+          <a href="/proyectos.html" class="user-bar-btn">📁 Proyectos</a>
+          <button class="user-bar-logout" onclick="logout()">Salir</button>
+        </div>
       </div>
     </div>
   </header>
@@ -154,10 +161,8 @@
     <span>·</span>
     <a href="https://www.pap.hacienda.gob.es/bdnstrans/GE/es/avisolegal" target="_blank">Aviso legal</a>
   </footer>
-  <!-- SCRIPTS -->
+
 <script src="auth.js"></script>
 <script src="app.js"></script>
-
-
 </body>
 </html>

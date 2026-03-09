@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -78,10 +77,14 @@
     <div class="brand-seal" style="background:var(--gold);color:var(--ink);width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;border-radius:3px;">BD</div>
     <span class="admin-title">Panel de Administración · Base de datos local</span>
   </div>
-  <div style="display:flex;gap:10px;align-items:center;">
-    <span style="font-family:var(--mono);font-size:10px;color:rgba(255,255,255,0.35);">👤 <span id="usuarioActual"></span></span>
-<a href="/index.html" class="admin-back">← Volver al buscador</a>
-    <button onclick="logout()" style="background:transparent;border:1px solid rgba(192,57,43,0.4);color:rgba(192,57,43,0.7);font-family:var(--mono);font-size:11px;padding:6px 14px;border-radius:4px;cursor:pointer;">Salir</button>
+  <div class="user-bar">
+    <a href="/perfil.html" class="user-bar-btn" id="perfilLink" title="Mi perfil">
+      <span class="user-bar-avatar" id="userAvatar">?</span>
+      <span id="usuarioActual"></span>
+    </a>
+    <a href="/proyectos.html" class="user-bar-btn">📁 Proyectos</a>
+    <a href="/index.html" class="user-bar-btn">← Buscador</a>
+    <button class="user-bar-logout" onclick="logout()">Salir</button>
   </div>
 </div>
 
@@ -160,6 +163,10 @@
     if (s == null || s === undefined) return '';
     return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
+  function escJs(s) {
+    if (s == null || s === undefined) return '';
+    return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/\r/g,'').replace(/\n/g,'\\n');
+  }
   // ── Usuarios ──────────────────────────────────────────
   async function cargarUsuarios() {
     const res = await fetch('/api/usuarios');
@@ -172,10 +179,10 @@
       const usuarioEsc = esc(u.usuario);
       const nombreEsc = esc(u.nombre || '');
       const rolBadge = rol === 'admin'
-        ? `<span class="bo-sm" style="background:#1a3f7a;border-color:#1a3f7a;">🔑 Admin</span>`
+        ? `<span class="bo-sm" style="background:#1a3f7a;border-color:#1a3f7a;color:white;">🔑 Admin</span>`
         : rol === 'gestor'
-          ? `<span class="bo-sm" style="background:#6d4c9e;border-color:#6d4c9e;">📋 Gestor</span>`
-          : `<span style="background:#eee;color:#555;border:1px solid #ccc;border-radius:4px;padding:2px 8px;font-size:10px;font-family:var(--mono);">👤 Usuario</span>`;
+          ? `<span class="bo-sm" style="background:#6d4c9e;border-color:#6d4c9e;color:white;">📋 Gestor</span>`
+          : `<span class="bc-sm">👤 Usuario</span>`;
 
       // Botones cambiar rol — solo visibles si el usuario actual es admin
       const miRol = sessionStorage.getItem('bdns_rol') || 'usuario';
@@ -185,7 +192,7 @@
           <option value="gestor"  ${rol==='gestor' ?'selected':''}>📋 Gestor</option>
           <option value="admin"   ${rol==='admin'  ?'selected':''}>🔑 Admin</option>
         </select>
-        <button class="admin-btn" style="font-size:10px;padding:4px 10px;background:#1a3f7a;" onclick="cambiarRol(${u.id},'${usuarioEsc}')">Guardar</button>`;
+        <button class="admin-btn" style="font-size:10px;padding:4px 10px;background:#1a3f7a;" onclick="cambiarRol(${u.id},'${escJs(u.usuario)}')">Guardar</button>`;
       html+=`<tr>
         <td><span class="admin-id">${u.id}</span></td>
         <td><span style="font-family:var(--mono);font-size:11px;">${usuarioEsc}</span></td>
@@ -193,8 +200,9 @@
         <td class="admin-fecha">${u.ultimo_login?new Date(u.ultimo_login).toLocaleString('es-ES'):'Nunca'}</td>
         <td>${rolBadge}</td>
         <td style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+          <a class="admin-btn" href="/perfil.html?id=${u.id}" style="font-size:10px;padding:4px 10px;background:#1a5c34;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">👤 Perfil</a>
           ${btnRol}
-          ${miRol === 'admin' ? `<button class="admin-btn" style="background:var(--red);font-size:10px;padding:4px 10px;" onclick="eliminarUsuario(${u.id},'${usuarioEsc}')">Eliminar</button>` : ''}
+          ${miRol === 'admin' ? `<button class="admin-btn" style="background:var(--red);font-size:10px;padding:4px 10px;" onclick="eliminarUsuario(${u.id},'${escJs(u.usuario)}')">Eliminar</button>` : ''}
         </td>
       </tr>`;
     });

@@ -16,10 +16,15 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
+    // Nombre en header
     const el = document.getElementById('usuarioActual');
     if (el && usuario) el.textContent = usuario;
 
-    // Mostrar enlace Admin solo si es admin o gestor
+    // Avatar con inicial
+    const av = document.getElementById('userAvatar');
+    if (av && usuario) av.textContent = usuario.charAt(0).toUpperCase();
+
+    // Enlace Admin: solo visible para admin/gestor
     const adminLink = document.getElementById('adminLink');
     if (adminLink) {
       adminLink.style.display = (rol === 'admin' || rol === 'gestor') ? '' : 'none';
