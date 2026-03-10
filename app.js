@@ -39,6 +39,11 @@ let selEstado = '';
 let datos = [], total = 0, paginas = 0, errores = 0;
 let running = false, stopped = false;
 
+// ── Paginación de tabla ───────────────────────────────────
+const PAGE_SIZE = 50;
+let tablaPagina = 0;
+let datosFiltrados = [];
+
 // ── Build CCAA chips ──────────────────────────────────────
 const grid = document.getElementById('ccaaGrid');
 CCAA.forEach(cc => {
@@ -60,7 +65,6 @@ function setEstado(el, val) {
   document.querySelectorAll('#estadoChips .f-chip').forEach(c => c.classList.remove('active'));
 
   if (yaActivo && val !== '') {
-    // Deseleccionar → volver a "Todas"
     selEstado = '';
     const todas = document.querySelector('#estadoChips .f-chip[data-val=""]');
     if (todas) todas.classList.add('active');
@@ -70,13 +74,7 @@ function setEstado(el, val) {
   }
 
   if (datos.length > 0) {
-    if (!selEstado) {
-      document.querySelectorAll('#tbody tr').forEach(tr => tr.style.display = '');
-      const noteEl = $('estadoFiltroNote');
-      if (noteEl) noteEl.textContent = '';
-    } else {
-      filtrarPorEstado();
-    }
+    filtrarPorEstado();
   }
 }
 
@@ -126,61 +124,178 @@ function updateUI() {
 
 function log(msg) { $('logLine').innerHTML = msg; }
 
+function buildRowHTML(r) {
+  const num     = r.numeroConvocatoria || r.id || '—';
+  const titulo  = r.descripcion || '—';
+  const tituloL = r.descripcionLeng || '';
+  const ccaa    = r.nivel2 || '—';
+  const organo  = r.nivel3 || '—';
+  const convId  = r.id;
+
+  // Si el detalle ya fue cargado, mostrarlo; si no, placeholders
+  const fechaCell = buildFechaHTML(r);
+  const plazoCell = buildPlazoHTML(r);
+  const basesCell = buildBasesHTML(r);
+
+  return `<tr data-conv-id="${convId}"
+    data-conv-titulo="${(r.descripcion||'').replace(/"/g,'&quot;')}"
+    data-conv-organo="${(r.nivel3||r.nivel2||'').replace(/"/g,'&quot;')}"
+    data-conv-importe="${r.presupuestoTotal??r.importeTotal??r.importe??''}"
+    data-conv-fecha-inicio="${r.fechaInicioSolicitud||r.fechaRecepcion||''}"
+    data-conv-fecha-fin="${r.fechaFinSolicitud||''}"
+    data-conv-num="${r.numeroConvocatoria||r.id||''}">
+    <td class="tn"><a class="conv-link" href="https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/${num}" target="_blank">${num}</a></td>
+    <td>
+      <div class="tnivel1">${ccaa}</div>
+      <div class="to">${organo}</div>
+    </td>
+    <td class="tregiones" id="regiones-${convId}">${buildRegionesHTML(r)}</td>
+    <td class="tt">${titulo}${tituloL ? `<span class="titulol">${tituloL}</span>` : ''}</td>
+    <td class="tf" id="fecha-${convId}">${fechaCell}</td>
+    <td class="tplazo" id="plazo-${convId}">${plazoCell}</td>
+    <td class="tbases" id="bases-${convId}">${basesCell}</td>
+  </tr>`;
+}
+
+function buildFechaHTML(r) {
+  if (!r._detalleLoaded) return '<span class="bases-loading">···</span>';
+  const ini = r.fechaInicioSolicitud ? `<div class="fecha-row"><span class="fecha-label">Apertura</span><span class="fecha-val">${fmtF(r.fechaInicioSolicitud)}</span></div>` : '';
+  const fin = r.fechaFinSolicitud    ? `<div class="fecha-row"><span class="fecha-label">Cierre</span><span class="fecha-val">${fmtF(r.fechaFinSolicitud)}</span></div>` : '';
+  return ini || fin ? ini + fin : `<span class="bases-none">${fmtF(r.fechaRecepcion||r.fechaRegistro||'')}</span>`;
+}
+
+function buildPlazoHTML(r) {
+  if (!r._detalleLoaded) return '<span class="bases-loading">···</span>';
+  if (r.abierto === false) return '<span class="bc">Cerrada</span>';
+  if (r.fechaFinSolicitud) return `<span class="bo">Abierta</span><div class="det-plazo">📅 hasta ${fmtF(r.fechaFinSolicitud)}</div>`;
+  if (r.abierto === true) return '<span class="bo">Abierta</span><div class="det-plazo">⏳ Plazo indefinido</div>';
+  return '<span class="bx">—</span>';
+}
+
+function buildRegionesHTML(r) {
+  if (!r._detalleLoaded) {
+    const ccaa = r.nivel2 || '—';
+    return `<span class="reg-nivel2">${ccaa !== '—' ? ccaa : '—'}</span>`;
+  }
+  const ccaaNivel2 = r.nivel2 && r.nivel2 !== '—' ? `<span class="reg-nivel2">${r.nivel2}</span>` : '';
+  const regsDetalle = r.regionesDetalle
+    ? r.regionesDetalle.split(' | ').map(reg => `<span class="reg-tag">${reg}</span>`).join('')
+    : '';
+  return ccaaNivel2 + (regsDetalle ? `<div class="reg-detalle">${regsDetalle}</div>` : '');
+}
+
+function buildBasesHTML(r) {
+  if (!r._detalleLoaded) return '<span class="bases-loading">···</span>';
+
+  const estadoHtml = r.abierto === true
+    ? '<span class="bo">ABIERTA</span>'
+    : r.abierto === false
+      ? '<span class="bc">CERRADA</span>'
+      : '<span class="bx">—</span>';
+
+  const basesHtml = r.urlBasesReguladoras
+    ? `<a class="bases-link" href="${r.urlBasesReguladoras}" target="_blank">📄 Bases</a>`
+    : '<span class="bases-none">—</span>';
+
+  const sedeHtml = r.sedeElectronica
+    ? `<a class="bases-link" href="${r.sedeElectronica}" target="_blank">🖥 Solicitar</a>` : '';
+
+  const boeHtml = r.urlBOE
+    ? `<a class="bases-link" href="${r.urlBOE}" target="_blank">📰 BOE</a>` : '';
+
+  const proyBtn = (sessionStorage.getItem('bdns_rol') === 'admin')
+    ? `<button class="bases-link proy-btn" onclick="abrirModalProyectoConv('${r.id}')">📁 Crear proyecto</button>` : '';
+
+  return `
+    <div class="det-estado">${estadoHtml}</div>
+    <div class="det-links">${basesHtml}${sedeHtml ? ' ' + sedeHtml : ''}${boeHtml ? ' ' + boeHtml : ''}</div>
+    ${r.fechaFinSolicitud ? `<div class="det-plazo">📅 hasta ${fmtF(r.fechaFinSolicitud)}</div>` : r.textFin ? `<div class="det-plazo">⏱ ${r.textFin}</div>` : ''}
+    ${r.tiposBeneficiarios ? `<div class="det-ben" title="${r.tiposBeneficiarios}">👥 ${r.tiposBeneficiarios.slice(0,40)}${r.tiposBeneficiarios.length > 40 ? '…' : ''}</div>` : ''}
+    ${proyBtn}
+  `;
+}
+
 function addRows(rows) {
+  // Solo actualiza datosFiltrados y re-renderiza la página actual
+  actualizarFiltrados();
+  renderPagina();
+}
+
+function actualizarFiltrados() {
+  if (!selEstado) {
+    datosFiltrados = [...datos];
+  } else {
+    const mostrar = selEstado === 'true';
+    datosFiltrados = datos.filter(r => r.abierto === mostrar || r.abierto === null || r.abierto === undefined);
+  }
+}
+
+function renderPagina() {
   const tb = $('tbody');
-  rows.forEach(r => {
-    const num    = r.numeroConvocatoria || r.id || '—';
-    const titulo = r.descripcion || '—';
-    const tituloL = r.descripcionLeng || '';
-    const tipoAdmin = r.nivel1 || '—';
-    const ccaa      = r.nivel2 || '—';
-    const organo    = r.nivel3 || '—';
-    const importe = r.presupuestoTotal ?? r.importeTotal ?? r.importe ?? null;
-    const estado = r.descripcionEstado || r.estado || '';
-    const tr = document.createElement('tr');
-    const convId = r.id;
-    tr.dataset.convId = convId;
-    tr.innerHTML = `
-      <td class="tn"><a class="conv-link" href="https://www.infosubvenciones.es/bdnstrans/GE/es/convocatorias/${num}" target="_blank">${num}</a></td>
-      <td>
-        <div class="tnivel1">${ccaa}</div>
-        <div class="to">${organo}</div>
-      </td>
-      <td class="tregiones" id="regiones-${convId}"><span class="reg-nivel2">${ccaa !== '—' ? ccaa : '—'}</span></td>
-      <td class="tt">${titulo}${tituloL ? `<span class="titulol">${tituloL}</span>` : ''}</td>
-      <td class="tf" id="fecha-${convId}"><span class="bases-loading">···</span></td>
-      <td class="tplazo" id="plazo-${convId}"><span class="bases-loading">···</span></td>
-      <td class="tbases" id="bases-${convId}"><span class="bases-loading">···</span></td>`;
-    tb.appendChild(tr);
-  });
+  const inicio = tablaPagina * PAGE_SIZE;
+  const fin    = Math.min(inicio + PAGE_SIZE, datosFiltrados.length);
+  const slice  = datosFiltrados.slice(inicio, fin);
+
+  tb.innerHTML = slice.map(buildRowHTML).join('');
+  renderPaginador();
+  updateUI();
+}
+
+function renderPaginador() {
+  const totalPags = Math.ceil(datosFiltrados.length / PAGE_SIZE);
+  const pag = $('paginador');
+  if (!pag) return;
+
+  if (totalPags <= 1) { pag.innerHTML = ''; return; }
+
+  const inicio = tablaPagina * PAGE_SIZE + 1;
+  const fin    = Math.min((tablaPagina + 1) * PAGE_SIZE, datosFiltrados.length);
+
+  let html = `<div class="pag-info">Mostrando ${fmt(inicio)}–${fmt(fin)} de ${fmt(datosFiltrados.length)}</div>`;
+  html += `<div class="pag-btns">`;
+  html += `<button class="pag-btn" onclick="irPagina(0)" ${tablaPagina===0?'disabled':''}>«</button>`;
+  html += `<button class="pag-btn" onclick="irPagina(${tablaPagina-1})" ${tablaPagina===0?'disabled':''}>‹</button>`;
+
+  // Botones de páginas cercanas
+  const rango = 2;
+  for (let i = 0; i < totalPags; i++) {
+    if (i === 0 || i === totalPags-1 || Math.abs(i - tablaPagina) <= rango) {
+      html += `<button class="pag-btn${i===tablaPagina?' pag-active':''}" onclick="irPagina(${i})">${i+1}</button>`;
+    } else if (Math.abs(i - tablaPagina) === rango+1) {
+      html += `<span class="pag-ellipsis">…</span>`;
+    }
+  }
+
+  html += `<button class="pag-btn" onclick="irPagina(${tablaPagina+1})" ${tablaPagina===totalPags-1?'disabled':''}>›</button>`;
+  html += `<button class="pag-btn" onclick="irPagina(${totalPags-1})" ${tablaPagina===totalPags-1?'disabled':''}>»</button>`;
+  html += `</div>`;
+  pag.innerHTML = html;
+}
+
+function irPagina(n) {
+  const totalPags = Math.ceil(datosFiltrados.length / PAGE_SIZE);
+  tablaPagina = Math.max(0, Math.min(n, totalPags - 1));
+  renderPagina();
+  $('tablePanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ── Detalle convocatoria ─────────────────────────────────
 async function fetchDetalles(rows) {
-  const LOTE = 5;
+  const LOTE = 2;  // menos peticiones simultáneas
   for (let i = 0; i < rows.length; i += LOTE) {
     const lote = rows.slice(i, i + LOTE);
     await Promise.all(lote.map(async r => {
-      const cell = document.getElementById(`bases-${r.id}`);
-      if (!cell) return;
       try {
         const res = await fetch(`/api/convocatorias?numConv=${r.numeroConvocatoria}&vpd=GE`);
-        if (!res.ok) { cell.innerHTML = '<span class="bases-none">—</span>'; return; }
+        if (!res.ok) { r._detalleLoaded = true; return; }
         const d = await res.json();
 
+        // Guardar todo en el objeto r (que está en datos[])
         r.presupuestoTotal        = d.presupuestoTotal ?? null;
         r.abierto                 = d.abierto ?? null;
         r.tipoConvocatoria        = d.tipoConvocatoria || '';
         r.fechaInicioSolicitud    = d.fechaInicioSolicitud || '';
         r.fechaFinSolicitud       = d.fechaFinSolicitud || '';
-
-        // Actualizar celda de fechas de solicitud
-        const fechaCell = document.getElementById(`fecha-${r.id}`);
-        if (fechaCell) {
-          const ini = r.fechaInicioSolicitud ? `<div class="fecha-row"><span class="fecha-label">Apertura</span><span class="fecha-val">${fmtF(r.fechaInicioSolicitud)}</span></div>` : '';
-          const fin = r.fechaFinSolicitud    ? `<div class="fecha-row"><span class="fecha-label">Cierre</span><span class="fecha-val">${fmtF(r.fechaFinSolicitud)}</span></div>`    : '';
-          fechaCell.innerHTML = ini || fin ? ini + fin : `<span class="bases-none">${fmtF(r.fechaRecepcion || r.fechaRegistro || '')}</span>`;
-        }
         r.textInicio              = d.textInicio || '';
         r.textFin                 = d.textFin || '';
         r.descripcionFinalidad    = d.descripcionFinalidad || '';
@@ -196,91 +311,41 @@ async function fetchDetalles(rows) {
         r.cveBOE                  = (d.anuncios||[])[0]?.cve || '';
         r.documentos              = (d.documentos||[]).map(x=>
           `https://www.infosubvenciones.es/bdnstrans/api/documentos/${x.id}`).join(' | ');
+        r._detalleLoaded          = true;
 
-        const regionesCell = document.getElementById(`regiones-${r.id}`);
-        if (regionesCell) {
-          const ccaaNivel2 = r.nivel2 && r.nivel2 !== '—' ? `<span class="reg-nivel2">${r.nivel2}</span>` : '';
-          const regsDetalle = r.regionesDetalle
-            ? r.regionesDetalle.split(' | ').map(reg => `<span class="reg-tag">${reg}</span>`).join('')
-            : '';
-          regionesCell.innerHTML = ccaaNivel2 + (regsDetalle ? `<div class="reg-detalle">${regsDetalle}</div>` : '');
-        }
+        // Si la fila está en el DOM (en la página actual), actualizarla directamente
+        const fechaCell   = document.getElementById(`fecha-${r.id}`);
+        const plazoCell   = document.getElementById(`plazo-${r.id}`);
+        const basesCell   = document.getElementById(`bases-${r.id}`);
+        const regionCell  = document.getElementById(`regiones-${r.id}`);
+        if (fechaCell)  fechaCell.innerHTML  = buildFechaHTML(r);
+        if (plazoCell)  plazoCell.innerHTML  = buildPlazoHTML(r);
+        if (basesCell)  basesCell.innerHTML  = buildBasesHTML(r);
+        if (regionCell) regionCell.innerHTML = buildRegionesHTML(r);
 
-        const plazoCell = document.getElementById(`plazo-${r.id}`);
-        if (plazoCell) {
-          if (d.abierto === false) {
-            plazoCell.innerHTML = '<span class="bc">Cerrada</span>';
-          } else if (d.fechaFinSolicitud) {
-            plazoCell.innerHTML = `<span class="bo">Abierta</span><div class="det-plazo">📅 hasta ${fmtF(d.fechaFinSolicitud)}</div>`;
-          } else if (d.abierto === true) {
-            plazoCell.innerHTML = '<span class="bo">Abierta</span><div class="det-plazo">⏳ Plazo indefinido</div>';
-          } else {
-            plazoCell.innerHTML = '<span class="bx">—</span>';
-          }
-        }
-
-        const estadoHtml = d.abierto === true
-          ? '<span class="bo">ABIERTA</span>'
-          : d.abierto === false
-            ? '<span class="bc">CERRADA</span>'
-            : '<span class="bx">—</span>';
-
-        const basesHtml = d.urlBasesReguladoras
-          ? `<a class="bases-link" href="${d.urlBasesReguladoras}" target="_blank">📄 Bases</a>`
-          : '<span class="bases-none">—</span>';
-
-        const sedeHtml = d.sedeElectronica
-          ? `<a class="bases-link" href="${d.sedeElectronica}" target="_blank">🖥 Solicitar</a>`
-          : '';
-
-        const boeHtml = r.urlBOE
-          ? `<a class="bases-link" href="${r.urlBOE}" target="_blank">📰 BOE</a>`
-          : '';
-
-        // Guardar datos del detalle en el tr para el modal de proyecto
-        const trEl = document.querySelector(`tr[data-conv-id="${r.id}"]`);
-        if (trEl) {
-          trEl.dataset.convTitulo     = r.descripcion || '';
-          trEl.dataset.convOrgano     = r.nivel3 || r.nivel2 || '';
-          trEl.dataset.convImporte    = r.presupuestoTotal ?? r.importeTotal ?? r.importe ?? '';
-          trEl.dataset.convFechaInicio = d.fechaInicioSolicitud || r.fechaRecepcion || '';
-          trEl.dataset.convFechaFin    = d.fechaFinSolicitud || '';
-          trEl.dataset.convNum         = r.numeroConvocatoria || r.id || '';
-        }
-
-        const proyBtn = (sessionStorage.getItem('bdns_rol') === 'admin')
-          ? `<button class="bases-link proy-btn" onclick="abrirModalProyectoConv('${r.id}')">📁 Crear proyecto</button>`
-          : '';
-
-        cell.innerHTML = `
-          <div class="det-estado">${estadoHtml}</div>
-          <div class="det-links">${basesHtml}${sedeHtml ? ' ' + sedeHtml : ''}${boeHtml ? ' ' + boeHtml : ''}</div>
-          ${d.fechaFinSolicitud ? `<div class="det-plazo">📅 hasta ${fmtF(d.fechaFinSolicitud)}</div>` : d.textFin ? `<div class="det-plazo">⏱ ${d.textFin}</div>` : ''}
-          ${d.tiposBeneficiarios?.length ? `<div class="det-ben" title="${r.tiposBeneficiarios}">👥 ${(d.tiposBeneficiarios[0]?.descripcion||'').slice(0,40)}${r.tiposBeneficiarios.length > 40 ? '…' : ''}</div>` : ''}
-          ${proyBtn}
-        `;
       } catch(e) {
-        cell.innerHTML = '<span class="bases-none">—</span>';
+        r._detalleLoaded = true;
       }
     }));
-    filtrarPorEstado();
-    await new Promise(resolve => setTimeout(resolve, 150));
+
+    // Actualizar filtros (por si cambió abierto) y re-renderizar si hace falta
+    if (selEstado) {
+      actualizarFiltrados();
+      renderPagina();
+    }
+    await new Promise(resolve => setTimeout(resolve, 400));  // más espera entre lotes
   }
 }
 
 function filtrarPorEstado() {
-  if (!selEstado) return;
-  const mostrar = selEstado === 'true';
-  document.querySelectorAll('#tbody tr').forEach(tr => {
-    const id = parseInt(tr.dataset.convId);
-    const r = datos.find(x => x.id === id);
-    if (!r || r.abierto === null || r.abierto === undefined) return;
-    tr.style.display = (r.abierto === mostrar) ? '' : 'none';
-  });
-  const visibles = document.querySelectorAll('#tbody tr:not([style*="none"])').length;
-  const nota = selEstado === 'true' ? '· mostrando abiertas' : '· mostrando cerradas';
+  tablaPagina = 0; // Volver a la primera página al filtrar
+  actualizarFiltrados();
+  renderPagina();
+
+  const visibles = datosFiltrados.length;
+  const nota = selEstado === 'true' ? '· mostrando abiertas' : selEstado === 'false' ? '· mostrando cerradas' : '';
   const noteEl = $('estadoFiltroNote');
-  if (noteEl) noteEl.textContent = nota + ` (${visibles})`;
+  if (noteEl) noteEl.textContent = nota ? `${nota} (${visibles})` : '';
 }
 
 // ── Cargar regiones (solo para mapear VPD → NUTS id) ─────
@@ -344,9 +409,11 @@ async function fetchPage(page) {
 async function iniciar() {
   if (running) return;
   datos = []; total = 0; paginas = 0; errores = 0;
+  datosFiltrados = []; tablaPagina = 0;
   running = true; stopped = false;
 
   $('tbody').innerHTML = '';
+  const pag = $('paginador'); if (pag) pag.innerHTML = '';
   $('err').classList.remove('on');
   $('progPanel').classList.add('on');
   $('resultsBar').classList.add('on');
@@ -432,7 +499,7 @@ async function iniciar() {
         await new Promise(r => setTimeout(r, 1200));
       }
       updateUI();
-      await new Promise(r => setTimeout(r, 120));
+      await new Promise(r => setTimeout(r, 300));
     }
 
     $('progLabel').textContent = stopped

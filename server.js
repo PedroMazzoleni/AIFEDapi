@@ -231,7 +231,61 @@ function requireAdmin(req, res) {
 }
 
 // ── Proxy helper (infosubvenciones) ──────────────────────
+
+// Cola de peticiones para evitar 429 Too Many Requests
+const proxyQueue = [];
+let proxyActive = 0;
+const PROXY_CONCURRENCY = 3;      // máximo 3 peticiones simultáneas
+const PROXY_DELAY_MS    = 200;    // ms entre inicio de cada petición
+let lastProxyTime = 0;
+
+function runProxyQueue() {
+  while (proxyActive < PROXY_CONCURRENCY && proxyQueue.length > 0) {
+    const { apiPath, resolve, reject, retries } = proxyQueue.shift();
+    proxyActive++;
+
+    const now = Date.now();
+    const wait = Math.max(0, lastProxyTime + PROXY_DELAY_MS - now);
+    lastProxyTime = now + wait;
+
+    setTimeout(() => {
+      proxyGetDirect(apiPath)
+        .then(result => {
+          proxyActive--;
+          // Si 429, reencolar con backoff exponencial
+          if (result.statusCode === 429) {
+            const delay = Math.min(8000, 1000 * Math.pow(2, retries));
+            console.warn(`[PROXY 429] ${apiPath} — reintento ${retries + 1} en ${delay}ms`);
+            if (retries < 4) {
+              setTimeout(() => {
+                proxyQueue.unshift({ apiPath, resolve, reject, retries: retries + 1 });
+                runProxyQueue();
+              }, delay);
+            } else {
+              resolve(result); // Devolver el 429 tras agotar reintentos
+            }
+          } else {
+            resolve(result);
+          }
+          runProxyQueue();
+        })
+        .catch(err => {
+          proxyActive--;
+          reject(err);
+          runProxyQueue();
+        });
+    }, wait);
+  }
+}
+
 function proxyGet(apiPath) {
+  return new Promise((resolve, reject) => {
+    proxyQueue.push({ apiPath, resolve, reject, retries: 0 });
+    runProxyQueue();
+  });
+}
+
+function proxyGetDirect(apiPath) {
   const options = {
     hostname: API_HOST, path: apiPath, method: 'GET',
     headers: {
