@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BDNS · Buscador de Convocatorias</title>
+  <title>AIFED · Convocatorias</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="chat.css">
 </head>
@@ -16,22 +16,19 @@
   <header class="site-header">
     <div class="header-inner">
       <div class="header-brand">
-        <div class="brand-seal">BOE</div>
+        <div class="brand-seal"><img src="banderas/logo-aifed.png" alt="AIFED" style="width:100%;height:100%;object-fit:contain;border-radius:4px;"></div>
         <div class="brand-text">
-          <span class="brand-ministry">Ministerio de Hacienda · IGAE · España</span>
-          <h1 class="brand-title">Base de Datos Nacional de Subvenciones</h1>
+          <h1 class="brand-title">Intranet AIFED <span>Convocatorias</span></h1>
         </div>
       </div>
       <div class="header-meta">
-        <div class="meta-pill">API pública</div>
-        <span class="meta-url">infosubvenciones.es</span>
         <div class="user-bar">
           <a href="/perfil.html" class="user-bar-btn" id="perfilLink" title="Mi perfil">
             <span class="user-bar-avatar" id="userAvatar">?</span>
             <span id="usuarioActual"></span>
           </a>
-          <a href="/admin.html" class="user-bar-btn" id="adminLink" style="display:none">⚙ Admin</a>
-          <a href="/proyectos.html" class="user-bar-btn">📁 Proyectos</a>
+          <a href="/admin.html" class="user-bar-btn" id="adminLink" style="display:none">Admin</a>
+          <a href="/proyectos.html" class="user-bar-btn">Proyectos</a>
           <button class="user-bar-logout" onclick="logout()">Salir</button>
         </div>
       </div>
@@ -156,11 +153,7 @@
   </div><!-- /wrap -->
 
   <footer class="site-footer">
-    <span>BDNS · Base de Datos Nacional de Subvenciones</span>
-    <span>·</span>
-    <span>Ministerio de Hacienda de España</span>
-    <span>·</span>
-    <a href="https://www.pap.hacienda.gob.es/bdnstrans/GE/es/avisolegal" target="_blank">Aviso legal</a>
+    <span>Intranet AIFED · Convocatorias</span>
   </footer>
 
 <script src="auth.js"></script>

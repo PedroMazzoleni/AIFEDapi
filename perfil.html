@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BDNS · Perfil</title>
+  <title>AIFED · Perfil</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="perfil.css">
 </head>
@@ -14,11 +14,11 @@
 <!-- CABECERA -->
 <div class="perfil-header">
   <div style="display:flex;align-items:center;gap:14px;">
-    <div class="brand-seal" style="width:36px;height:36px;font-size:9px;">BOE</div>
-    <span style="font-family:var(--serif);font-size:18px;font-weight:300;color:white;">Perfil de Usuario</span>
+    <div style="width:36px;height:36px;border-radius:6px;overflow:hidden;background:white;padding:3px;flex-shrink:0;"><img src="banderas/logo-aifed.png" style="width:100%;height:100%;object-fit:contain;"></div>
+    <span style="font-family:var(--serif);font-size:18px;font-weight:300;color:white;">Perfil</span>
   </div>
   <div style="display:flex;gap:10px;align-items:center;">
-    <span style="font-family:var(--mono);font-size:10px;color:rgba(255,255,255,0.3);">👤 <span id="usuarioActual"></span></span>
+    <span style="font-family:var(--mono);font-size:10px;color:rgba(255,255,255,0.3);"><span id="usuarioActual"></span></span>
     <a href="/index.html" class="back-link">← Buscador</a>
     <button onclick="logout()" style="background:transparent;border:1px solid rgba(192,57,43,0.4);color:rgba(192,57,43,0.7);font-family:var(--mono);font-size:11px;padding:6px 14px;border-radius:4px;cursor:pointer;">Salir</button>
   </div>
@@ -55,10 +55,10 @@
     <!-- COL DCH: tabs -->
     <div class="p-card" style="overflow:visible;">
       <div class="tabs" id="tabs">
-        <div class="tab active" data-tab="anotaciones" onclick="switchTab('anotaciones')">📝 Anotaciones</div>
-        <div class="tab" data-tab="proyectos"   onclick="switchTab('proyectos')">📁 Proyectos</div>
-        <div class="tab" data-tab="tareas"      onclick="switchTab('tareas')">✅ Tareas</div>
-        <div class="tab" data-tab="archivos"    onclick="switchTab('archivos')">🔗 Archivos</div>
+        <div class="tab active" data-tab="anotaciones" onclick="switchTab('anotaciones')">Anotaciones</div>
+        <div class="tab" data-tab="proyectos"   onclick="switchTab('proyectos')">Proyectos</div>
+        <div class="tab" data-tab="tareas"      onclick="switchTab('tareas')">Tareas</div>
+        <div class="tab" data-tab="archivos"    onclick="switchTab('archivos')">Archivos</div>
       </div>
 
       <!-- ANOTACIONES -->

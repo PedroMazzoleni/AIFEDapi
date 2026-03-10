@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BDNS · Proyectos</title>
+  <title>AIFED · Proyectos</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <style>
     /* ── Header ── */
@@ -23,9 +23,9 @@
       background: var(--white); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 20px;
     }
     .proy-toolbar-left { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    .proy-search { padding: 7px 12px; border: 1px solid var(--border); border-radius: 4px; font-family: var(--sans); font-size: 13px; color: var(--ink); background: var(--paper); outline: none; width: 220px; }
+    .proy-search { padding: 7px 12px; border: 1px solid var(--border); border-radius: 4px; font-family: Inter, sans-serif; font-size: 13px; color: var(--ink); background: var(--paper); outline: none; width: 220px; }
     .proy-search:focus { border-color: var(--blue-mid); background: white; }
-    .filter-chip { padding: 5px 12px; border: 1px solid var(--border); border-radius: 20px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; color: var(--ink-faint); background: transparent; transition: all 0.12s; }
+    .filter-chip { padding: 5px 12px; border: 1px solid var(--border); border-radius: 20px; font-family: Inter, sans-serif; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; color: var(--ink-faint); background: transparent; transition: all 0.12s; }
     .filter-chip:hover { border-color: var(--ink-mid); color: var(--ink-mid); }
     .filter-chip.active { background: var(--ink); color: white; border-color: var(--ink); }
 
@@ -46,11 +46,11 @@
 
     .proy-card-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
     .proy-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-    .proy-card-nombre { font-family: var(--serif); font-size: 16px; font-weight: 400; color: var(--ink); line-height: 1.3; }
-    .proy-card-cliente { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); margin-top: 2px; }
+    .proy-card-nombre { font-family: Outfit, sans-serif; font-size: 16px; font-weight: 400; color: var(--ink); line-height: 1.3; }
+    .proy-card-cliente { font-family: Inter, sans-serif; font-size: 10px; color: var(--ink-faint); margin-top: 2px; }
     .proy-card-desc { font-size: 12px; color: var(--ink-mid); line-height: 1.5; }
     .proy-card-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 4px; }
-    .proy-card-fechas { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); }
+    .proy-card-fechas { font-family: Inter, sans-serif; font-size: 10px; color: var(--ink-faint); }
 
     /* ── Miembros avatares ── */
     .miembros-row { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
@@ -58,19 +58,19 @@
       width: 26px; height: 26px; border-radius: 50%;
       background: var(--ink); color: white;
       display: inline-flex; align-items: center; justify-content: center;
-      font-family: var(--serif); font-size: 11px; font-weight: 600;
+      font-family: Outfit, sans-serif; font-size: 11px; font-weight: 600;
       border: 2px solid white; margin-left: -6px; cursor: default;
       flex-shrink: 0;
     }
     .miembro-av:first-child { margin-left: 0; }
     .miembro-av.responsable { background: var(--gold); color: var(--ink); }
-    .miembro-av-more { background: var(--paper-warm); color: var(--ink-faint); font-family: var(--mono); font-size: 9px; }
-    .miembros-empty { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); }
+    .miembro-av-more { background: var(--paper-warm); color: var(--ink-faint); font-family: Inter, sans-serif; font-size: 9px; }
+    .miembros-empty { font-family: Inter, sans-serif; font-size: 10px; color: var(--ink-faint); }
 
     .proy-card-actions { padding: 10px 18px; border-top: 1px solid var(--border-light); display: flex; gap: 6px; background: var(--paper); }
 
     /* ── Badges ── */
-    .badge { display: inline-flex; font-family: var(--mono); font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 7px; border-radius: 2px; font-weight: 500; }
+    .badge { display: inline-flex; font-family: Inter, sans-serif; font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 7px; border-radius: 2px; font-weight: 500; }
     .badge-green  { background: var(--green-light);  color: var(--green);    border: 1px solid var(--green); }
     .badge-blue   { background: var(--blue-light);   color: var(--blue);     border: 1px solid var(--blue); }
     .badge-gold   { background: var(--gold-light);   color: var(--gold);     border: 1px solid var(--gold); }
@@ -79,7 +79,7 @@
     .badge-gray   { background: var(--paper-warm);   color: var(--ink-faint);border: 1px solid var(--border); }
 
     /* ── Botones ── */
-    .btn { padding: 7px 16px; border: none; border-radius: 4px; font-family: var(--sans); font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.12s; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+    .btn { padding: 7px 16px; border: none; border-radius: 4px; font-family: Inter, sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.12s; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
     .btn-primary { background: var(--ink); color: white; }
     .btn-primary:hover { background: var(--blue); }
     .btn-sm { padding: 5px 11px; font-size: 11px; }
@@ -95,7 +95,7 @@
     .modal-backdrop.open { display: flex; }
     .modal { background: white; border-radius: var(--r); width: 100%; max-width: 640px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 64px rgba(0,0,0,0.25); }
     .modal-head { padding: 20px 24px 16px; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: white; z-index: 1; }
-    .modal-title { font-family: var(--serif); font-size: 18px; font-weight: 300; color: var(--ink); }
+    .modal-title { font-family: Outfit, sans-serif; font-size: 18px; font-weight: 300; color: var(--ink); }
     .modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--ink-faint); padding: 4px 8px; border-radius: 4px; }
     .modal-close:hover { background: var(--paper); }
     .modal-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
@@ -104,10 +104,10 @@
     /* ── Formulario ── */
     .form-row { display: flex; gap: 12px; flex-wrap: wrap; }
     .form-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 160px; }
-    .form-group label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); }
+    .form-group label { font-family: Inter, sans-serif; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); }
     .form-group input,
     .form-group select,
-    .form-group textarea { padding: 8px 11px; border: 1.5px solid var(--border); border-radius: 4px; font-family: var(--sans); font-size: 13px; color: var(--ink); background: white; outline: none; width: 100%; }
+    .form-group textarea { padding: 8px 11px; border: 1.5px solid var(--border); border-radius: 4px; font-family: Inter, sans-serif; font-size: 13px; color: var(--ink); background: white; outline: none; width: 100%; }
     .form-group input:focus,
     .form-group select:focus,
     .form-group textarea:focus { border-color: var(--blue-mid); }
@@ -115,33 +115,33 @@
 
     /* ── Asignación de miembros ── */
     .miembros-section { border: 1px solid var(--border-light); border-radius: 4px; overflow: hidden; }
-    .miembros-section-head { padding: 10px 14px; background: var(--paper); border-bottom: 1px solid var(--border-light); font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); display: flex; justify-content: space-between; align-items: center; }
+    .miembros-section-head { padding: 10px 14px; background: var(--paper); border-bottom: 1px solid var(--border-light); font-family: Inter, sans-serif; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); display: flex; justify-content: space-between; align-items: center; }
     .miembro-item { padding: 8px 14px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-light); }
     .miembro-item:last-child { border-bottom: none; }
-    .miembro-item-av { width: 28px; height: 28px; border-radius: 50%; background: var(--ink); color: white; display: flex; align-items: center; justify-content: center; font-family: var(--serif); font-size: 12px; flex-shrink: 0; }
+    .miembro-item-av { width: 28px; height: 28px; border-radius: 50%; background: var(--ink); color: white; display: flex; align-items: center; justify-content: center; font-family: Outfit, sans-serif; font-size: 12px; flex-shrink: 0; }
     .miembro-item-info { flex: 1; }
     .miembro-item-nombre { font-size: 13px; color: var(--ink); font-weight: 500; }
-    .miembro-item-rol { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); }
+    .miembro-item-rol { font-family: Inter, sans-serif; font-size: 10px; color: var(--ink-faint); }
 
     .add-miembro-row { padding: 10px 14px; display: flex; gap: 8px; background: var(--paper-warm); }
-    .add-miembro-row select { flex: 1; padding: 6px 10px; border: 1px solid var(--border); border-radius: 4px; font-family: var(--sans); font-size: 12px; color: var(--ink); background: white; outline: none; }
+    .add-miembro-row select { flex: 1; padding: 6px 10px; border: 1px solid var(--border); border-radius: 4px; font-family: Inter, sans-serif; font-size: 12px; color: var(--ink); background: white; outline: none; }
     .add-miembro-row select:focus { border-color: var(--blue-mid); }
 
     /* ── Msg ── */
-    .msg { font-family: var(--mono); font-size: 11px; padding: 6px 10px; border-radius: 4px; margin-top: 4px; display: none; }
+    .msg { font-family: Inter, sans-serif; font-size: 11px; padding: 6px 10px; border-radius: 4px; margin-top: 4px; display: none; }
     .msg.ok  { background: var(--green-light); color: var(--green); border: 1px solid var(--green); display: block; }
     .msg.err { background: var(--red-light);   color: var(--red);   border: 1px solid var(--red);   display: block; }
 
     /* ── Empty ── */
     .empty-state { text-align: center; padding: 56px 32px; }
     .empty-state-icon { font-size: 40px; margin-bottom: 12px; }
-    .empty-state-title { font-family: var(--serif); font-size: 20px; font-weight: 300; color: var(--ink); margin-bottom: 6px; }
-    .empty-state-sub { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); }
+    .empty-state-title { font-family: Outfit, sans-serif; font-size: 20px; font-weight: 300; color: var(--ink); margin-bottom: 6px; }
+    .empty-state-sub { font-family: Inter, sans-serif; font-size: 11px; color: var(--ink-faint); }
 
-    .back-link { color: rgba(255,255,255,0.4); font-family: var(--mono); font-size: 11px; text-decoration: none; border: 1px solid rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 4px; }
+    .back-link { color: rgba(255,255,255,0.4); font-family: Inter, sans-serif; font-size: 11px; text-decoration: none; border: 1px solid rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 4px; }
     .back-link:hover { color: var(--gold-mid); border-color: var(--gold-mid); }
 
-    .presupuesto-val { font-family: var(--mono); font-size: 11px; color: var(--ink-mid); }
+    .presupuesto-val { font-family: Inter, sans-serif; font-size: 11px; color: var(--ink-mid); }
 
     /* ── Modal archivos ── */
     .arch-list { display: flex; flex-direction: column; gap: 8px; }
@@ -149,7 +149,7 @@
     .arch-icon { font-size: 22px; flex-shrink: 0; }
     .arch-info { flex: 1; min-width: 0; }
     .arch-nombre { font-size: 13px; color: var(--ink); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .arch-meta { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); margin-top: 2px; }
+    .arch-meta { font-family: Inter, sans-serif; font-size: 10px; color: var(--ink-faint); margin-top: 2px; }
     .arch-actions { display: flex; gap: 6px; flex-shrink: 0; }
     .upload-area {
       border: 2px dashed var(--border);
@@ -162,13 +162,13 @@
     }
     .upload-area:hover, .upload-area.dragover { border-color: var(--blue-mid); background: var(--blue-light); }
     .upload-area-icon { font-size: 28px; margin-bottom: 8px; }
-    .upload-area-text { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); }
+    .upload-area-text { font-family: Inter, sans-serif; font-size: 11px; color: var(--ink-faint); }
     .upload-area-text strong { color: var(--blue-mid); cursor: pointer; }
     .upload-progress { display: none; margin-top: 10px; }
     .upload-progress.visible { display: block; }
     .prog-bar { height: 4px; background: var(--border-light); border-radius: 2px; overflow: hidden; margin-top: 6px; }
     .prog-bar-fill { height: 100%; background: var(--blue); border-radius: 2px; transition: width 0.3s; }
-    .upload-msg { font-family: var(--mono); font-size: 11px; margin-top: 6px; }
+    .upload-msg { font-family: Inter, sans-serif; font-size: 11px; margin-top: 6px; }
   </style>
 </head>
 <body>
@@ -176,14 +176,14 @@
 <!-- CABECERA -->
 <div class="proy-header">
   <div style="display:flex;align-items:center;gap:14px;">
-    <div class="brand-seal" style="width:36px;height:36px;font-size:9px;">BOE</div>
-    <span style="font-family:var(--serif);font-size:18px;font-weight:300;color:white;">Gestión de Proyectos</span>
+    <div style="width:36px;height:36px;border-radius:6px;overflow:hidden;background:white;padding:3px;flex-shrink:0;"><img src="banderas/logo-aifed.png" style="width:100%;height:100%;object-fit:contain;"></div>
+    <span style="font-family:Outfit,sans-serif;font-size:18px;font-weight:300;color:white;">Gestión de Proyectos</span>
   </div>
   <div style="display:flex;gap:10px;align-items:center;">
-    <span style="font-family:var(--mono);font-size:10px;color:rgba(255,255,255,0.3);">👤 <span id="usuarioActual"></span></span>
-    <a href="/admin.html" class="back-link" id="adminLink" style="display:none">⚙ Admin</a>
+    <span style="font-family:Inter,sans-serif;font-size:10px;color:rgba(255,255,255,0.3);">👤 <span id="usuarioActual"></span></span>
+    <a href="/admin.html" class="back-link" id="adminLink" style="display:none">Admin</a>
     <a href="/index.html" class="back-link">← Buscador</a>
-    <button onclick="logout()" style="background:transparent;border:1px solid rgba(192,57,43,0.4);color:rgba(192,57,43,0.7);font-family:var(--mono);font-size:11px;padding:6px 14px;border-radius:4px;cursor:pointer;">Salir</button>
+    <button onclick="logout()" style="background:transparent;border:1px solid rgba(192,57,43,0.4);color:rgba(192,57,43,0.7);font-family:Inter,sans-serif;font-size:11px;padding:6px 14px;border-radius:4px;cursor:pointer;">Salir</button>
   </div>
 </div>
 
@@ -202,11 +202,11 @@
   </div>
 
   <!-- CONTADOR -->
-  <div style="font-family:var(--mono);font-size:11px;color:var(--ink-faint);" id="contador"></div>
+  <div style="font-family:Inter,sans-serif;font-size:11px;color:var(--ink-faint);" id="contador"></div>
 
   <!-- GRID -->
   <div class="proy-grid" id="proyGrid">
-    <div style="grid-column:1/-1;padding:40px;text-align:center;font-family:var(--mono);font-size:12px;color:var(--ink-faint);">Cargando proyectos…</div>
+    <div style="grid-column:1/-1;padding:40px;text-align:center;font-family:Inter,sans-serif;font-size:12px;color:var(--ink-faint);">Cargando proyectos…</div>
   </div>
 
 </div>
@@ -539,7 +539,7 @@ async function renderMiembros(id) {
   document.getElementById('miembrosCount').textContent = `${miembros.length} miembro${miembros.length !== 1 ? 's' : ''}`;
 
   if (!miembros.length) {
-    document.getElementById('listaMiembros').innerHTML = `<div style="padding:16px;font-family:var(--mono);font-size:11px;color:var(--ink-faint);text-align:center;">Sin miembros asignados</div>`;
+    document.getElementById('listaMiembros').innerHTML = `<div style="padding:16px;font-family:Inter,sans-serif;font-size:11px;color:var(--ink-faint);text-align:center;">Sin miembros asignados</div>`;
     return;
   }
 
@@ -617,7 +617,7 @@ async function abrirModalArchivos(id) {
 
 async function cargarArchivos(id) {
   document.getElementById('listaArchivos').innerHTML =
-    '<div style="padding:16px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--ink-faint);">Cargando…</div>';
+    '<div style="padding:16px;text-align:center;font-size:11px;color:var(--ink-faint);">Cargando…</div>';
   const res  = await fetch(`/api/proyectos/${id}/archivos`);
   const data = await res.json();
   renderArchivos(Array.isArray(data) ? data : []);
@@ -626,11 +626,11 @@ async function cargarArchivos(id) {
 function renderArchivos(lista) {
   const el = document.getElementById('listaArchivos');
   if (!lista.length) {
-    el.innerHTML = '<div style="padding:16px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--ink-faint);">Sin archivos subidos</div>';
+    el.innerHTML = '<div style="padding:16px;text-align:center;font-size:11px;color:var(--ink-faint);">Sin archivos subidos</div>';
     return;
   }
   el.innerHTML = lista.map(a => {
-    const icon  = a.tipo === 'PDF' ? '📕' : a.tipo === 'Word' ? '📘' : '📄';
+    const icon  = a.tipo === 'PDF' ? '📕' : a.tipo === 'Word' ? '📘' : '';
     const size  = a.tamanyo ? fmtSize(a.tamanyo) : '';
     const fecha = a.created_at ? new Date(a.created_at).toLocaleDateString('es-ES') : '';
     return `
@@ -742,7 +742,7 @@ function fmtSize(bytes) {
           ondragover="event.preventDefault();this.classList.add('dragover')"
           ondragleave="this.classList.remove('dragover')"
           ondrop="handleDrop(event)">
-          <div class="upload-area-icon">📄</div>
+          <div class="upload-area-icon"></div>
           <div class="upload-area-text">
             Arrastra un archivo aquí o <strong>haz clic para seleccionar</strong><br>
             PDF · Word (.doc, .docx) · Máx. 20 MB
@@ -757,9 +757,9 @@ function fmtSize(bytes) {
 
       <!-- Lista de archivos -->
       <div style="margin-top:14px;">
-        <div style="font-family:var(--mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:8px;">Archivos subidos</div>
+        <div style="font-family:Inter,sans-serif;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:8px;">Archivos subidos</div>
         <div class="arch-list" id="listaArchivos">
-          <div style="padding:16px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--ink-faint);">Cargando…</div>
+          <div style="padding:16px;text-align:center;font-family:Inter,sans-serif;font-size:11px;color:var(--ink-faint);">Cargando…</div>
         </div>
       </div>
 

@@ -185,6 +185,13 @@ const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.css':  'text/css; charset=utf-8',
   '.js':   'application/javascript; charset=utf-8',
+  '.png':  'image/png',
+  '.jpg':  'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif':  'image/gif',
+  '.svg':  'image/svg+xml',
+  '.ico':  'image/x-icon',
+  '.webp': 'image/webp',
 };
 
 function sendJSON(res, code, obj) {
@@ -1126,10 +1133,10 @@ const server = http.createServer(async (req, res) => {
   // ─────────────────────────────────────────────────────────
   let filePath = pathname === '/' ? '/index.html' : pathname;
   filePath = path.join(__dirname, filePath);
-  fs.readFile(filePath, (err, content) => {
+  fs.readFile(filePath, (err, data) => {
     if (err) { res.writeHead(404); res.end(`No encontrado: ${pathname}`); return; }
-    res.writeHead(200, { 'Content-Type': MIME[path.extname(filePath)] || 'text/plain' });
-    res.end(content);
+    res.writeHead(200, { 'Content-Type': MIME[path.extname(filePath)] || 'application/octet-stream' });
+    res.end(data);
   });
 });
 

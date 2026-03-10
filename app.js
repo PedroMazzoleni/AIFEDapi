@@ -1,26 +1,26 @@
 const CCAA = [
-  { vpd:'GE',     name:'Estado (AGE)',       flag:'🇪🇸' },
-  { vpd:'AN',     name:'Andalucía',          flag:'🌻' },
-  { vpd:'AR',     name:'Aragón',             flag:'⚜️' },
-  { vpd:'AS',     name:'Asturias',           flag:'🏔️' },
-  { vpd:'IB',     name:'Baleares',           flag:'🏝️' },
-  { vpd:'CN',     name:'Canarias',           flag:'🌋' },
-  { vpd:'CB',     name:'Cantabria',          flag:'⚓' },
-  { vpd:'CL',     name:'Castilla y León',    flag:'🏰' },
-  { vpd:'CM',     name:'Castilla-La Mancha', flag:'🌾' },
-  { vpd:'CT',     name:'Cataluña',           flag:'🔴' },
-  { vpd:'EX',     name:'Extremadura',        flag:'🐂' },
-  { vpd:'GA',     name:'Galicia',            flag:'🐚' },
-  { vpd:'MD',     name:'Madrid',             flag:'🐻' },
-  { vpd:'MC',     name:'Murcia',             flag:'☀️' },
-  { vpd:'NA',     name:'Navarra',            flag:'⛪' },
-  { vpd:'PV',     name:'País Vasco',         flag:'🌿' },
-  { vpd:'RI',     name:'La Rioja',           flag:'🍷' },
-  { vpd:'VC',     name:'C. Valenciana',      flag:'🍊' },
-  { vpd:'CE',     name:'Ceuta',              flag:'🏛️' },
-  { vpd:'ML',     name:'Melilla',            flag:'🏛️' },
-  { vpd:'POCTEP',      name:'POCTEP',        flag:'🇪🇺' },
-  { vpd:'SOCIALPOWER', name:'Social Power',  flag:'🤝' },
+  { vpd:'GE',          name:'Estado (AGE)',       img:'ESTADO' },
+  { vpd:'AN',          name:'Andalucía',          img:'ANDALUCIA' },
+  { vpd:'AR',          name:'Aragón',             img:'ARAGON' },
+  { vpd:'AS',          name:'Asturias',           img:'AUSTRIAS' },
+  { vpd:'IB',          name:'Baleares',           img:'BALEARES' },
+  { vpd:'CN',          name:'Canarias',           img:'ISLASCANARIAS' },
+  { vpd:'CB',          name:'Cantabria',          img:'CANTABRIA' },
+  { vpd:'CL',          name:'Castilla y León',    img:'CASTILLAYLEON' },
+  { vpd:'CM',          name:'Castilla-La Mancha', img:'CASTILLALAMANCHA' },
+  { vpd:'CT',          name:'Cataluña',           img:'CATALUNA' },
+  { vpd:'EX',          name:'Extremadura',        img:'EXTREMADURA' },
+  { vpd:'GA',          name:'Galicia',            img:'GALICIA' },
+  { vpd:'MD',          name:'Madrid',             img:'MADRID' },
+  { vpd:'MC',          name:'Murcia',             img:'MURCIA' },
+  { vpd:'NA',          name:'Navarra',            img:'NAVARRA' },
+  { vpd:'PV',          name:'País Vasco',         img:'PAISVASCO' },
+  { vpd:'RI',          name:'La Rioja',           img:'LARIOJA' },
+  { vpd:'VC',          name:'C. Valenciana',      img:'C.VALENCIANA' },
+  { vpd:'CE',          name:'Ceuta',              img:'CEUTA' },
+  { vpd:'ML',          name:'Melilla',            img:'MELILLA' },
+  { vpd:'POCTEP',      name:'POCTEP',             img:'ESTADO' },
+  { vpd:'SOCIALPOWER', name:'Social Power',       img:'ESTADO' },
 ];
 
 const VPD_NUTS_CODIGO = {
@@ -45,7 +45,7 @@ CCAA.forEach(cc => {
   const d = document.createElement('div');
   d.className = 'ccaa-chip' + (cc.vpd === selVpd ? ' active' : '');
   d.dataset.vpd = cc.vpd;
-  d.innerHTML = `<span class="flag">${cc.flag}</span><span class="name">${cc.name}</span>`;
+  d.innerHTML = `<span class="flag"><img src="banderas/${cc.img}.png" alt="${cc.name}"></span><span class="name">${cc.name}</span>`;
   d.onclick = () => {
     document.querySelectorAll('.ccaa-chip').forEach(c => c.classList.remove('active'));
     d.classList.add('active');
